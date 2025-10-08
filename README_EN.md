@@ -106,6 +106,32 @@ Get the latest version from [**Releases**](https://github.com/aydomini/CC-Bridge
 - **macOS**: 10.13 (High Sierra) or later, Apple Silicon (M1/M2/M3) chip
 - **Claude Code**: Must be installed at `~/.claude/`
 
+### Installation Steps
+
+1. Download `CC Bridge-1.0.0-arm64.dmg`
+2. Open the DMG file
+3. Drag CC Bridge to Applications folder
+4. **First launch**: macOS will block the app because it's not notarized by Apple
+
+**Fixing "app is damaged" error:**
+
+**Method 1: Right-click to open (Recommended)**
+1. In Applications folder, right-click CC Bridge
+2. Select "Open"
+3. Click "Open" in the dialog
+
+**Method 2: System Settings**
+1. Open "System Settings" → "Privacy & Security"
+2. Find "CC Bridge was blocked" notification
+3. Click "Open Anyway"
+
+**Method 3: Terminal (Advanced users)**
+```bash
+xattr -cr "/Applications/CC Bridge.app"
+```
+
+> **Why does this happen?** CC Bridge is a free and open-source app, not notarized by Apple (requires $99/year developer account). The code is fully transparent and auditable on GitHub for security review.
+
 ## 🚀 Quick Start
 
 1. **Add Your First Station**
