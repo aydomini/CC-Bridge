@@ -1,0 +1,120 @@
+.balance-dialog {
+  max-width: 450px;
+}
+
+.balance-dialog.compact {
+  max-width: 340px;
+}
+
+.station-name-display {
+  text-align: center;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  background: var(--bg-color);
+  border-radius: 0.375rem;
+}
+
+.station-name-display.compact {
+  font-size: 0.9375rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+}
+
+.currency-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.currency-selector.compact {
+  gap: 0.5rem;
+}
+
+.currency-btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.625rem;
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.currency-btn:hover {
+  border-color: var(--primary-color);
+  background: #f8f9ff;
+}
+
+.currency-btn.active {
+  border-color: var(--primary-color);
+  background: #eef2ff;
+  color: var(--primary-color);
+}
+
+/* Dark mode styles */
+[data-theme="dark"] .currency-btn {
+  background: var(--bg-color);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .currency-btn:hover {
+  border-color: var(--primary-color);
+  background: var(--card-bg);
+}
+
+[data-theme="dark"] .currency-btn.active {
+  border-color: var(--primary-color);
+  background: #1e1b4b;
+  color: var(--primary-color);
+}
+
+[data-theme="dark"] .balance-input {
+  background: var(--bg-color);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .balance-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.balance-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.currency-prefix {
+  position: absolute;
+  left: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.balance-input {
+  width: 100%;
+  padding: 0.625rem 0.75rem 0.625rem 2.5rem !important;
+  font-size: 1.25rem !important;
+  font-weight: 600;
+  text-align: left;
+}
+
+.balance-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+

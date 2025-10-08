@@ -1,0 +1,30 @@
+/* Inherits most styles from StationDialog.css */
+
+.config-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.config-toolbar .help-text {
+  margin: 0;
+  flex: 1;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.json-edit-section {
+  margin-top: 1rem;
+}
+
+.config-preview-section h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}

@@ -1,0 +1,38 @@
+import React from 'react'
+
+const AppIcon: React.FC<{ size?: number }> = ({ size = 40 }) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 48 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Background circle */}
+      <circle cx="24" cy="24" r="22" fill="#6366f1" />
+
+      {/* Switch icon */}
+      <path
+        d="M14 18 L34 18 M34 18 L30 14 M34 18 L30 22"
+        stroke="white"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M34 30 L14 30 M14 30 L18 26 M14 30 L18 34"
+        stroke="white"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {/* Dots */}
+      <circle cx="18" cy="18" r="2" fill="white" opacity="0.6" />
+      <circle cx="30" cy="30" r="2" fill="white" opacity="0.6" />
+    </svg>
+  )
+}
+
+export default AppIcon
