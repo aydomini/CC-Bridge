@@ -45,6 +45,10 @@
     "productName": "CC Bridge",
     "files": [
       "dist/**/*",
+      "!dist/mac*/**/*",
+      "!dist/win*/**/*",
+      "!dist/linux*/**/*",
+      "!dist/*.{dmg,zip,exe,AppImage,deb,yml,blockmap}",
       "dist-electron/**/*"
     ],
     "mac": {

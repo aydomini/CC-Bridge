@@ -72,6 +72,40 @@ function createWindow() {
   })
 }
 
+function createApplicationMenu() {
+  const isChinese = currentLanguage === 'zh'
+
+  const template: Electron.MenuItemConstructorOptions[] = [
+    {
+      label: app.name,
+      submenu: [
+        {
+          label: isChinese ? `关于 ${app.name}` : `About ${app.name}`,
+          role: 'about'
+        },
+        { type: 'separator' },
+        {
+          label: isChinese ? '隐藏窗口' : 'Hide Window',
+          accelerator: 'CmdOrCtrl+H',
+          click: () => mainWindow?.hide()
+        },
+        { type: 'separator' },
+        {
+          label: isChinese ? '退出' : 'Quit',
+          accelerator: 'CmdOrCtrl+Q',
+          click: () => {
+            app.isQuitting = true
+            app.quit()
+          }
+        }
+      ]
+    }
+  ]
+
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
+}
+
 function createTray() {
   try {
     // Use same icon style as app icon
@@ -245,6 +279,7 @@ app.whenReady().then(() => {
   const systemLocale = app.getLocale()
   currentLanguage = systemLocale.toLowerCase().startsWith('zh') ? 'zh' : 'en'
 
+  createApplicationMenu()
   createWindow()
   createTray()
   setupIPC()
@@ -377,6 +412,7 @@ function setupIPC() {
   // Listen for language changes
   ipcMain.on('language-changed', (_event, language: 'en' | 'zh') => {
     currentLanguage = language
+    createApplicationMenu() // Update application menu with new language
     updateTrayMenu() // Update tray menu with new language
   })
 
