@@ -2,23 +2,21 @@
   <!-- Background circle -->
   <circle cx="256" cy="256" r="234" fill="#6366f1"/>
 
-  <!-- Switch icon -->
+  <!-- Switch icon - thicker arrows without dots -->
   <path
     d="M149 192 L363 192 M363 192 L320 149 M363 192 L320 235"
     stroke="white"
-    strokeWidth="26"
-    strokeLinecap="round"
-    strokeLinejoin="round"
+    stroke-width="40"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
   />
   <path
     d="M363 320 L149 320 M149 320 L192 277 M149 320 L192 363"
     stroke="white"
-    strokeWidth="26"
-    strokeLinecap="round"
-    strokeLinejoin="round"
+    stroke-width="40"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
   />
-
-  <!-- Dots -->
-  <circle cx="192" cy="192" r="21" fill="white" opacity="0.6"/>
-  <circle cx="320" cy="320" r="21" fill="white" opacity="0.6"/>
 </svg>
