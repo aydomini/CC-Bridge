@@ -30,11 +30,17 @@ declare global {
       hideWindow: () => void
       notifyLanguageChange: (language: 'en' | 'zh') => void
       showNotification: (title: string, body: string) => void
+      shell: {
+        openExternal: (url: string) => Promise<void>
+      }
 
       // Auto updater
       onUpdateAvailable: (callback: () => void) => void
       onUpdateDownloaded: (callback: () => void) => void
       onStationApplied: (callback: (stationId: string) => void) => void
+
+      // System changes listeners
+      onSystemThemeChanged: (callback: (isDarkMode: boolean) => void) => void
     }
   }
 }

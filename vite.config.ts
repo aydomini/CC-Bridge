@@ -13,8 +13,9 @@ export default defineConfig({
         vite: {
           build: {
             outDir: 'dist-electron',
+            minify: 'esbuild',
             rollupOptions: {
-              external: ['electron', 'electron-store', 'electron-updater'],
+              external: ['electron'],
               output: {
                 format: 'cjs'
               }
@@ -26,7 +27,8 @@ export default defineConfig({
         entry: 'electron/preload.ts',
         vite: {
           build: {
-            outDir: 'dist-electron'
+            outDir: 'dist-electron',
+            minify: 'esbuild'
           }
         },
         onstart(options) {
@@ -44,7 +46,22 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    emptyOutDir: true
+    emptyOutDir: true,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug']
+      }
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: undefined, // Don't split chunks
+      }
+    },
+    assetsInlineLimit: 10240, // Inline assets < 10KB
+    cssCodeSplit: false // Don't split CSS
   },
   server: {
     port: 5173

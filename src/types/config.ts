@@ -85,10 +85,7 @@ export interface ClaudeSettings {
  * Default base configuration
  */
 export const DEFAULT_BASE_CONFIG: BaseConfig = {
-  env: {
-    ANTHROPIC_AUTH_TOKEN: '',
-    ANTHROPIC_BASE_URL: ''
-  },
+  env: {},
   permissions: {
     allow: [],
     deny: []

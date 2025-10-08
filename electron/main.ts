@@ -1,5 +1,4 @@
 import { app, BrowserWindow, ipcMain, dialog, Tray, Menu, nativeImage, nativeTheme, Notification } from 'electron'
-import { autoUpdater } from 'electron-updater'
 import path from 'path'
 import fs from 'fs/promises'
 import { configManager } from './services/configManager.js'
@@ -98,6 +97,18 @@ function createApplicationMenu() {
             app.quit()
           }
         }
+      ]
+    },
+    {
+      label: isChinese ? '编辑' : 'Edit',
+      submenu: [
+        { label: isChinese ? '撤销' : 'Undo', accelerator: 'CmdOrCtrl+Z', role: 'undo' },
+        { label: isChinese ? '重做' : 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo' },
+        { type: 'separator' },
+        { label: isChinese ? '剪切' : 'Cut', accelerator: 'CmdOrCtrl+X', role: 'cut' },
+        { label: isChinese ? '复制' : 'Copy', accelerator: 'CmdOrCtrl+C', role: 'copy' },
+        { label: isChinese ? '粘贴' : 'Paste', accelerator: 'CmdOrCtrl+V', role: 'paste' },
+        { label: isChinese ? '全选' : 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectAll' }
       ]
     }
   ]
@@ -284,9 +295,30 @@ app.whenReady().then(() => {
   createTray()
   setupIPC()
 
-  // Check for updates (production only)
-  if (!isDev) {
-    autoUpdater.checkForUpdatesAndNotify()
+  // Listen for system theme changes
+  nativeTheme.on('updated', () => {
+    const isDarkMode = nativeTheme.shouldUseDarkColors
+    console.log('[System] Theme changed to:', isDarkMode ? 'dark' : 'light')
+
+    // Notify renderer process
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('system-theme-changed', isDarkMode)
+    }
+  })
+
+  // Test notification on startup (development only)
+  if (isDev) {
+    setTimeout(() => {
+      console.log('[Dev] Sending test notification...')
+      if (Notification.isSupported()) {
+        new Notification({
+          title: 'CC Bridge',
+          body: 'Notification system is working!'
+        }).show()
+      } else {
+        console.error('[Dev] Notifications not supported')
+      }
+    }, 2000)
   }
 
   app.on('activate', () => {
@@ -418,18 +450,30 @@ function setupIPC() {
 
   // Show notification
   ipcMain.on('show-notification', (_event, title: string, body: string) => {
-    new Notification({
-      title,
-      body
-    }).show()
+    console.log('[Notification] Attempting to show:', { title, body })
+
+    if (!Notification.isSupported()) {
+      console.error('[Notification] Notifications are not supported on this system')
+      return
+    }
+
+    try {
+      const notification = new Notification({
+        title,
+        body
+      })
+
+      notification.on('show', () => {
+        console.log('[Notification] Notification shown successfully')
+      })
+
+      notification.on('failed', (_, error) => {
+        console.error('[Notification] Failed to show notification:', error)
+      })
+
+      notification.show()
+    } catch (error) {
+      console.error('[Notification] Error creating notification:', error)
+    }
   })
 }
-
-// Auto updater events
-autoUpdater.on('update-available', () => {
-  mainWindow?.webContents.send('update-available')
-})
-
-autoUpdater.on('update-downloaded', () => {
-  mainWindow?.webContents.send('update-downloaded')
-})

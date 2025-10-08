@@ -96,18 +96,6 @@ const BaseConfigDialog: React.FC<Props> = ({ onClose }) => {
     })
   }
 
-  const updateFromJson = (value: string) => {
-    setJsonValue(value)
-    try {
-      const parsed = JSON.parse(value)
-      setConfig(parsed)
-      setDisplayValue(getDisplayValue(parsed, t('hidden')))
-      setJsonError('')
-    } catch {
-      setJsonError(t('invalidJson'))
-    }
-  }
-
   if (loading || !config) {
     return (
       <div className="dialog-overlay">

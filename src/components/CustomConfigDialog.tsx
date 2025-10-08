@@ -9,7 +9,6 @@ interface Props {
 }
 
 const CustomConfigDialog: React.FC<Props> = ({ initialConfig, onSave, onClose }) => {
-  const [jsonMode, setJsonMode] = useState(true)
   const [jsonValue, setJsonValue] = useState('')
   const [jsonError, setJsonError] = useState('')
 

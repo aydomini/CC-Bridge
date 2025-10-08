@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { TransferStation, Currency } from './types/config'
 import StationList from './components/StationList'
 import StationDialog from './components/StationDialog'
@@ -12,7 +12,7 @@ import './App.css'
 
 function App() {
   const { theme, toggleTheme } = useTheme()
-  const { language, toggleLanguage, t } = useLanguage()
+  const { toggleLanguage, t } = useLanguage()
   const [stations, setStations] = useState<TransferStation[]>([])
   const [showStationDialog, setShowStationDialog] = useState(false)
   const [showBaseConfigDialog, setShowBaseConfigDialog] = useState(false)
@@ -119,12 +119,15 @@ function App() {
     }
 
     const result = await window.electronAPI.applyStation(id)
+    console.log('[App] Apply station result:', result)
 
     if (result.success) {
       const isRunning = await window.electronAPI.isClaudeRunning()
 
       const station = stations.find(s => s.id === id)
       const stationName = station?.name || 'Station'
+
+      console.log('[App] Sending notification:', { isRunning, stationName })
 
       if (isRunning) {
         window.electronAPI.showNotification(

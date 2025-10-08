@@ -39,6 +39,20 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     }
     initTheme()
+
+    // Listen for system theme changes
+    const handleSystemThemeChange = (isDarkMode: boolean) => {
+      const userSetTheme = localStorage.getItem('theme-user-set')
+
+      // Only auto-update if user hasn't manually set theme
+      if (userSetTheme !== 'true') {
+        const newTheme = isDarkMode ? 'dark' : 'light'
+        console.log('[ThemeContext] System theme changed, updating to:', newTheme)
+        setTheme(newTheme)
+      }
+    }
+
+    window.electronAPI.onSystemThemeChanged(handleSystemThemeChange)
   }, [])
 
   useEffect(() => {

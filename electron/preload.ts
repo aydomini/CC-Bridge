@@ -44,5 +44,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   onStationApplied: (callback: (stationId: string) => void) => {
     ipcRenderer.on('station-applied', (_event, stationId) => callback(stationId))
+  },
+
+  // System theme/language listeners
+  onSystemThemeChanged: (callback: (isDarkMode: boolean) => void) => {
+    ipcRenderer.on('system-theme-changed', (_event, isDarkMode) => callback(isDarkMode))
   }
 })

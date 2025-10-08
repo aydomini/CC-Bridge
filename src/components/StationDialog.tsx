@@ -26,7 +26,6 @@ const StationDialog: React.FC<Props> = ({ station, onSave, onClose }) => {
 
   const [customConfig, setCustomConfig] = useState<Partial<BaseConfig> | undefined>(undefined)
   const [useCustomConfig, setUseCustomConfig] = useState(false)
-  const [customConfigMode, setCustomConfigMode] = useState<'json' | 'form'>('json')
   const [customJsonValue, setCustomJsonValue] = useState('')
   const [customJsonError, setCustomJsonError] = useState('')
 

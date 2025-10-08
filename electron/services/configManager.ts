@@ -1,16 +1,16 @@
-import Store from 'electron-store'
-import { v4 as uuidv4 } from 'uuid'
+import crypto from 'crypto'
 import { AppConfig, TransferStation, BaseConfig, DEFAULT_BASE_CONFIG } from '../types/config.js'
 import { encryptionService } from './encryption.js'
+import { SimpleStore } from './simpleStore.js'
 
 /**
- * Configuration manager using electron-store
+ * Configuration manager using SimpleStore
  */
 class ConfigManager {
-  private store: Store<AppConfig>
+  private store: SimpleStore<AppConfig>
 
   constructor() {
-    this.store = new Store<AppConfig>({
+    this.store = new SimpleStore<AppConfig>({
       defaults: {
         version: '1.0.0',
         baseConfig: DEFAULT_BASE_CONFIG,
@@ -93,7 +93,7 @@ class ConfigManager {
   addStation(station: Omit<TransferStation, 'id' | 'createdAt'>): TransferStation {
     const newStation: TransferStation = {
       ...station,
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       createdAt: Date.now(),
       // Encrypt auth token before storing
       authToken: encryptionService.encrypt(station.authToken)
