@@ -4,7 +4,7 @@ import fs from 'fs/promises'
 import { configManager } from './services/configManager.js'
 import { settingsWriter } from './services/settingsWriter.js'
 import { TransferStation, BaseConfig } from './types/config.js'
-// Persistent storage already handled by configManager
+// Persistent storage managed by configManager
 
 let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
@@ -288,13 +288,13 @@ function updateTrayMenu() {
 
 app.whenReady().then(() => {
   // Check for user's stored language preference first
-  const userLanguage = store.get('language')
+  const userLanguage = configManager.getLanguage()
 
   // If no user preference, default to Chinese
   if (!userLanguage) {
     // 首次启动时设置为中文
     currentLanguage = 'zh'
-    store.set('language', 'zh')
+    configManager.setLanguage('zh')
   } else {
     currentLanguage = userLanguage
   }
@@ -448,7 +448,7 @@ function setupIPC() {
     currentLanguage = language
 
     // Save user's language preference
-    store.set('language', language)
+    configManager.setLanguage(language)
 
     createApplicationMenu() // Update application menu with new language
     updateTrayMenu() // Update tray menu with new language

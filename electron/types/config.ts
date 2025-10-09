@@ -53,6 +53,7 @@ export interface AppConfig {
   version: string
   baseConfig: BaseConfig
   stations: TransferStation[]
+  language?: 'en' | 'zh' // UI language preference
   settings: {
     storageLocation: string // custom storage path
     autoBackup: boolean

@@ -167,6 +167,20 @@ class ConfigManager {
   getStorePath(): string {
     return this.store.path
   }
+
+  /**
+   * Get language preference
+   */
+  getLanguage(): 'en' | 'zh' {
+    return this.store.get('language', 'zh')
+  }
+
+  /**
+   * Set language preference
+   */
+  setLanguage(language: 'en' | 'zh'): void {
+    this.store.set('language', language)
+  }
 }
 
 export const configManager = new ConfigManager()
