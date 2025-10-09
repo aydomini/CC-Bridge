@@ -212,37 +212,19 @@ const translations = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('en')
+  // Default to Chinese, load user preference if exists
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem('language')
 
-  // Auto-detect system language on mount
-  useEffect(() => {
-    const initLanguage = async () => {
-      // Always get system preferences first
-      let systemLanguage: Language = 'en'
-      try {
-        const prefs = await window.electronAPI.getSystemPreferences()
-        const systemLocale = prefs.locale.toLowerCase()
-        systemLanguage = systemLocale.startsWith('zh') ? 'zh' : 'en'
-      } catch (error) {
-        console.error('[LanguageContext] Failed to get system preferences:', error)
-      }
-
-      // Check if user has manually set a preference
-      const saved = localStorage.getItem('language')
-      const userSetLanguage = localStorage.getItem('language-user-set')
-
-      if (saved && userSetLanguage === 'true') {
-        // User has manually set language, respect their choice
-        setLanguage(saved as Language)
-      } else {
-        // Use system language
-        setLanguage(systemLanguage)
-        // Clear the flag since we're following system
-        localStorage.removeItem('language-user-set')
-      }
+    // 如果没有保存的语言,默认中文
+    if (!saved) {
+      localStorage.setItem('language', 'zh')
+      return 'zh'
     }
-    initLanguage()
-  }, [])
+
+    // 使用保存的语言
+    return saved as Language
+  })
 
   useEffect(() => {
     localStorage.setItem('language', language)
@@ -251,12 +233,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [language])
 
   const toggleLanguage = () => {
-    setLanguage(prev => {
-      const newLanguage = prev === 'en' ? 'zh' : 'en'
-      // Mark that user has manually set language
-      localStorage.setItem('language-user-set', 'true')
-      return newLanguage
-    })
+    setLanguage(prev => prev === 'en' ? 'zh' : 'en')
   }
 
   const t = (key: string): string => {

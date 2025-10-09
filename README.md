@@ -130,6 +130,12 @@ xattr -cr "/Applications/CC Bridge.app"
 ```
 
 > **为什么会这样？** CC Bridge 是开源免费应用，未经 Apple 公证（需要 $99/年开发者账号）。代码完全开源透明，可在 GitHub 审计安全性。
+>
+> **关于代码签名：**
+> - 当前版本使用临时签名（Adhoc Signing）
+> - 使用嵌入式 Hardened Runtime 和系统权限
+> - 仍需用户手动授权以启动应用
+> - 未来计划获取开发者账号进行正式签名
 
 ### 🚀 快速开始
 

@@ -4,6 +4,7 @@ import fs from 'fs/promises'
 import { configManager } from './services/configManager.js'
 import { settingsWriter } from './services/settingsWriter.js'
 import { TransferStation, BaseConfig } from './types/config.js'
+// Persistent storage already handled by configManager
 
 let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
@@ -286,25 +287,26 @@ function updateTrayMenu() {
 }
 
 app.whenReady().then(() => {
-  // Initialize language from system locale
-  const systemLocale = app.getLocale()
-  currentLanguage = systemLocale.toLowerCase().startsWith('zh') ? 'zh' : 'en'
+  // Check for user's stored language preference first
+  const userLanguage = store.get('language')
+
+  // If no user preference, default to Chinese
+  if (!userLanguage) {
+    // 首次启动时设置为中文
+    currentLanguage = 'zh'
+    store.set('language', 'zh')
+  } else {
+    currentLanguage = userLanguage
+  }
 
   createApplicationMenu()
   createWindow()
   createTray()
   setupIPC()
 
-  // Listen for system theme changes
-  nativeTheme.on('updated', () => {
-    const isDarkMode = nativeTheme.shouldUseDarkColors
-    console.log('[System] Theme changed to:', isDarkMode ? 'dark' : 'light')
-
-    // Notify renderer process
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('system-theme-changed', isDarkMode)
-    }
-  })
+  // No need for runtime system theme/locale monitoring
+  // Theme: checked once on startup + time-based switching (7:00/19:00)
+  // Language: user preference only, no system detection
 
   // Test notification on startup (development only)
   if (isDev) {
@@ -444,6 +446,10 @@ function setupIPC() {
   // Listen for language changes
   ipcMain.on('language-changed', (_event, language: 'en' | 'zh') => {
     currentLanguage = language
+
+    // Save user's language preference
+    store.set('language', language)
+
     createApplicationMenu() // Update application menu with new language
     updateTrayMenu() // Update tray menu with new language
   })

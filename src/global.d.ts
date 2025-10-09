@@ -38,9 +38,6 @@ declare global {
       onUpdateAvailable: (callback: () => void) => void
       onUpdateDownloaded: (callback: () => void) => void
       onStationApplied: (callback: (stationId: string) => void) => void
-
-      // System changes listeners
-      onSystemThemeChanged: (callback: (isDarkMode: boolean) => void) => void
     }
   }
 }
