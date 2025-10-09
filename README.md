@@ -93,21 +93,21 @@ CC Bridge 是一个**免费开源**的桌面应用程序，让你可以轻松管
 
 | 平台 | 文件 | 状态 |
 |------|------|------|
-| **macOS (Apple Silicon)** | `CC Bridge-1.0.0-arm64.dmg` | ✅ 已测试 |
+| **macOS (Apple Silicon)** | `CC Bridge-1.1.1-arm64.dmg` | ✅ 已测试 |
 | **macOS (Intel)** | - | ⚠️ 暂未提供 |
-| **Windows** | - | 🚧 计划支持 |
-| **Linux** | - | 🚧 计划支持 |
+| **Windows** | - | ⚠️ 暂未提供 |
+| **Linux** | - | ⚠️ 暂未提供 |
 
-> **注意**：v1.0.0 仅支持 macOS Apple Silicon (M1/M2/M3)。Intel Mac、Windows 和 Linux 版本计划在后续版本中提供。欢迎社区贡献！
+> **注意**：v1.1.1 已支持 macOS Apple Silicon (M1/M2/M3/M4)。Intel Mac、Windows 和 Linux 版本暂未提供。欢迎社区贡献！
 
 #### 系统要求
 
-- **macOS**: 10.13 (High Sierra) 或更高版本，Apple Silicon (M1/M2/M3) 芯片
+- **macOS**: 10.13 (High Sierra) 或更高版本，Apple Silicon (M1/M2/M3/M4) 芯片
 - **Claude Code**: 必须安装在 `~/.claude/`
 
 #### 安装步骤
 
-1. 下载 `CC Bridge-1.0.0-arm64.dmg`
+1. 下载 `CC Bridge-1.1.1-arm64.dmg`
 2. 打开 DMG 文件
 3. 将 CC Bridge 拖拽到应用程序文件夹
 4. **首次打开时**：由于应用未经 Apple 公证，macOS 会阻止运行
@@ -244,15 +244,6 @@ Copyright (c) 2025 aydomini
 
 - 🐛 [报告问题](https://github.com/aydomini/CC-Bridge/issues)
 - 💬 [讨论区](https://github.com/aydomini/CC-Bridge/discussions)
-
-### 🗺️ 路线图
-
-- [ ] 通过站点 API 自动同步余额
-- [ ] 导出/导入站点配置
-- [ ] 站点健康监控
-- [ ] 使用统计和图表
-- [ ] 自动更新机制
-- [ ] Windows 和 Linux 测试与优化
 
 ### ⭐ Star History
 

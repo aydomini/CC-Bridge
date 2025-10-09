@@ -94,21 +94,21 @@ Get the latest version from [**Releases**](https://github.com/aydomini/CC-Bridge
 
 | Platform | File | Status |
 |----------|------|--------|
-| **macOS (Apple Silicon)** | `CC Bridge-1.0.0-arm64.dmg` | ✅ Tested |
+| **macOS (Apple Silicon)** | `CC Bridge-1.1.1-arm64.dmg` | ✅ Tested |
 | **macOS (Intel)** | - | ⚠️ Not available yet |
-| **Windows** | - | 🚧 Planned |
-| **Linux** | - | 🚧 Planned |
+| **Windows** | - | ⚠️ Not available yet |
+| **Linux** | - | ⚠️ Not available yet |
 
-> **Note**: v1.0.0 only supports macOS Apple Silicon (M1/M2/M3). Intel Mac, Windows, and Linux versions are planned for future releases. Community contributions welcome!
+> **Note**: v1.1.1 supports macOS Apple Silicon (M1/M2/M3/M4). Intel Mac, Windows, and Linux versions are not yet available. Community contributions welcome!
 
 ### System Requirements
 
-- **macOS**: 10.13 (High Sierra) or later, Apple Silicon (M1/M2/M3) chip
+- **macOS**: 10.13 (High Sierra) or later, Apple Silicon (M1/M2/M3/M4) chip
 - **Claude Code**: Must be installed at `~/.claude/`
 
 ### Installation Steps
 
-1. Download `CC Bridge-1.0.0-arm64.dmg`
+1. Download `CC Bridge-1.1.1-arm64.dmg`
 2. Open the DMG file
 3. Drag CC Bridge to Applications folder
 4. **First launch**: macOS will block the app because it's not notarized by Apple
@@ -241,15 +241,6 @@ See [LICENSE](LICENSE) file for full details.
 
 - 🐛 [Report Issues](https://github.com/aydomini/CC-Bridge/issues)
 - 💬 [Discussions](https://github.com/aydomini/CC-Bridge/discussions)
-
-## 🗺️ Roadmap
-
-- [ ] Automatic balance sync via station API
-- [ ] Export/import station configurations
-- [ ] Station health monitoring
-- [ ] Usage statistics and charts
-- [ ] Auto-update mechanism
-- [ ] Windows & Linux testing and optimization
 
 ## ⭐ Star History
 
