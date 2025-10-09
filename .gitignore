@@ -36,6 +36,9 @@ out/
 *.AppImage
 *.deb
 
+# Local Claude Code data
+.claude/
+
 # User data (for testing)
 config.json
 

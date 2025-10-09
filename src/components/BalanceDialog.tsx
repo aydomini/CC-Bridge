@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { TransferStation, Currency } from '../types/config'
+import { TransferStation, Currency, AppMode } from '../types/config'
 import { useLanguage } from '../contexts/LanguageContext'
 import './BalanceDialog.css'
 
 interface Props {
+  mode: AppMode
   station: TransferStation
   onSave: (balance: number, currency: Currency) => void
   onClose: () => void
 }
 
-const BalanceDialog: React.FC<Props> = ({ station, onSave, onClose }) => {
+const BalanceDialog: React.FC<Props> = ({ mode: _mode, station, onSave, onClose }) => {
   const { t } = useLanguage()
   const [balance, setBalance] = useState('')
   const [currency, setCurrency] = useState<Currency>('USD')

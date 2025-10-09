@@ -1,11 +1,12 @@
 import React from 'react'
-import { TransferStation, Currency } from '../types/config'
+import { TransferStation, Currency, AppMode } from '../types/config'
 import FaviconIcon from './FaviconIcon'
 import { EditIcon, DollarIcon, CheckIcon, TrashIcon } from './Icons'
 import { useLanguage } from '../contexts/LanguageContext'
 import './StationList.css'
 
 interface Props {
+  mode: AppMode
   stations: TransferStation[]
   activeStationId: string | null
   onEdit: (station: TransferStation) => void

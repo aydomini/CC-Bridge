@@ -1,9 +1,8 @@
 import { app, BrowserWindow, ipcMain, dialog, Tray, Menu, nativeImage, nativeTheme, Notification } from 'electron'
 import path from 'path'
-import fs from 'fs/promises'
 import { configManager } from './services/configManager.js'
 import { settingsWriter } from './services/settingsWriter.js'
-import { TransferStation, BaseConfig } from './types/config.js'
+import { AppMode, TransferStation, ClaudeBaseConfig, CodexBaseConfig } from './types/config.js'
 // Persistent storage managed by configManager
 
 let mainWindow: BrowserWindow | null = null
@@ -146,144 +145,220 @@ function createTray() {
 }
 
 function updateTrayMenu() {
-  const stations = configManager.getStations()
+  if (!tray) return
 
-  // Use current language setting instead of system locale
   const isChinese = currentLanguage === 'zh'
+  const activeMode = configManager.getActiveMode()
 
-  // Translations
-  const t = {
-    showWindow: isChinese ? '显示窗口' : 'Show Window',
-    quit: isChinese ? '退出' : 'Quit',
-    noStations: isChinese ? '暂无站点' : 'No Stations',
-    unknownConfig: isChinese ? '未知配置（外部配置）' : 'Unknown Configuration (External)',
-    applySuccess: isChinese ? '配置已应用' : 'Configuration Applied',
-    applyFailed: isChinese ? '应用失败' : 'Apply Failed'
+  const modeNames: Record<AppMode, string> = {
+    claude: isChinese ? 'Claude Code' : 'Claude Code',
+    codex: 'Codex'
   }
 
-  // Get current active station by reading settings file
-  let currentStationId: string | null = null
-  let hasExternalConfig = false
-
-  try {
-    const settings = settingsWriter.getCurrentSettingsSync()
-    if (settings?.env?.ANTHROPIC_BASE_URL && settings?.env?.ANTHROPIC_AUTH_TOKEN) {
-      const currentUrl = settings.env.ANTHROPIC_BASE_URL
-      const currentToken = settings.env.ANTHROPIC_AUTH_TOKEN
-
-      // Match both URL and token to ensure accurate detection
-      // Skip stations with empty/failed decryption tokens
-      const matchedStation = stations.find(s =>
-        s.authToken && s.baseUrl === currentUrl && s.authToken === currentToken
-      )
-
-      if (matchedStation) {
-        currentStationId = matchedStation.id
-      } else {
-        // Check if URL matches any station (token decryption may have failed)
-        const urlMatch = stations.find(s => s.baseUrl === currentUrl)
-        if (urlMatch) {
-          // URL matches but token doesn't - likely decryption issue, treat as matched
-          currentStationId = urlMatch.id
-        } else {
-          // Has config but not in our list = external config
-          hasExternalConfig = true
-        }
-      }
-    }
-  } catch (error) {
-    // If can't read settings, no station is active
-    currentStationId = null
+  const sectionLabels: Record<AppMode, string> = {
+    claude: isChinese ? 'Claude Code 站点' : 'Claude Code Stations',
+    codex: isChinese ? 'Codex 站点' : 'Codex Stations'
   }
 
-  // Sort stations: active first, then by last used, then by created date
-  const sortedStations = [...stations].sort((a, b) => {
-    // Active station always on top
-    if (a.id === currentStationId) return -1
-    if (b.id === currentStationId) return 1
+  const externalWarnings: Record<AppMode, string> = {
+    claude: isChinese ? '当前 Claude Code 配置不受本应用管理' : 'Claude configuration outside this app',
+    codex: isChinese ? '当前 Codex 配置不受本应用管理' : 'Codex configuration outside this app'
+  }
 
-    // Then by last used
-    if (a.lastUsed && b.lastUsed) return b.lastUsed - a.lastUsed
-    if (a.lastUsed) return -1
-    if (b.lastUsed) return 1
+  const modeHeader = isChinese
+    ? `当前模式：${modeNames[activeMode]}`
+    : `Mode: ${modeNames[activeMode]}`
 
-    // Finally by created date
-    return b.createdAt - a.createdAt
-  })
+  const activeSuffix = isChinese ? '（当前模式）' : ' (Active Mode)'
+  const noStationsText = isChinese ? '暂无站点' : 'No Stations'
+  const showWindowText = isChinese ? '显示窗口' : 'Show Window'
+  const quitText = isChinese ? '退出' : 'Quit'
+  const applySuccessText = isChinese ? '配置已应用' : 'Configuration Applied'
+  const applyFailedText = isChinese ? '应用失败' : 'Apply Failed'
+  const claudeRestartHint = isChinese
+    ? 'Claude Code 正在运行中，请重启以应用新配置'
+    : 'Claude Code is running, please restart to apply new configuration'
 
-  const stationMenuItems = sortedStations.length > 0
-    ? sortedStations.map(station => ({
-        label: `${station.name}${station.id === currentStationId ? ' ✓' : ''}`,
-        type: 'normal' as const,
-        click: async () => {
-          try {
-            const baseConfig = configManager.getBaseConfig()
-            const result = await settingsWriter.applyStation(station, baseConfig)
+  const modes: AppMode[] = ['claude', 'codex']
 
-            if (result.success) {
-              // Update last used timestamp
-              configManager.updateStation(station.id, { lastUsed: Date.now() })
+  const buildSection = (mode: AppMode): Electron.MenuItemConstructorOptions => {
+    const stations = configManager.getStations(mode)
+    const storedActiveId = configManager.getActiveStationId(mode)
+    let currentStationId: string | null = storedActiveId ?? null
+    let hasExternalConfig = false
 
-              // Notify renderer to update UI
-              if (mainWindow) {
-                mainWindow.webContents.send('station-applied', station.id)
-              }
-
-              // Update menu to show new active station
-              updateTrayMenu()
-
-              // Check if Claude Code is running
-              const isRunning = await settingsWriter.isClaudeRunning()
-
-              // Success notification with restart hint if needed
-              new Notification({
-                title: isChinese ? '配置已应用' : 'Configuration Applied',
-                body: isRunning
-                  ? `${station.name} - ${isChinese ? 'Claude Code 正在运行中，请重启以应用新配置' : 'Claude Code is running, please restart to apply new configuration'}`
-                  : station.name
-              }).show()
+    const settingsSnapshot = settingsWriter.getCurrentSettingsSync(mode)
+    if (settingsSnapshot && settingsSnapshot.mode === mode) {
+      if (mode === 'claude') {
+        const settings = settingsSnapshot.settings
+        const currentUrl = settings.env?.ANTHROPIC_BASE_URL
+        const currentToken = settings.env?.ANTHROPIC_AUTH_TOKEN
+        if (currentUrl && currentToken) {
+          const matched = stations.find(
+            s => s.baseUrl === currentUrl && s.authToken === currentToken
+          )
+          if (matched) {
+            currentStationId = matched.id
+          } else {
+            const urlMatch = stations.find(s => s.baseUrl === currentUrl)
+            if (urlMatch) {
+              currentStationId = urlMatch.id
             } else {
-              new Notification({
-                title: t.applyFailed,
-                body: result.error || 'Unknown error'
-              }).show()
+              hasExternalConfig = true
+              currentStationId = null
             }
-          } catch (error: any) {
-            new Notification({
-              title: t.applyFailed,
-              body: error.message
-            }).show()
           }
         }
-      }))
-    : [{
-        label: t.noStations,
-        enabled: false
-      }]
-
-  const contextMenu = Menu.buildFromTemplate([
-    // Show external config indicator if present
-    ...(hasExternalConfig ? [{
-      label: `⚠️ ${t.unknownConfig}`,
-      enabled: false
-    }, { type: 'separator' as const }] : []),
-    ...stationMenuItems,
-    { type: 'separator' },
-    {
-      label: t.showWindow,
-      click: () => mainWindow?.show()
-    },
-    { type: 'separator' },
-    {
-      label: t.quit,
-      click: () => {
-        app.isQuitting = true
-        app.quit()
+      } else {
+        const settings = settingsSnapshot.settings
+        const currentUrl = settings.baseUrl
+        const currentToken = settings.authToken
+        if (currentUrl && currentToken) {
+          const matched = stations.find(
+            s => s.baseUrl === currentUrl && s.authToken === currentToken
+          )
+          if (matched) {
+            currentStationId = matched.id
+          } else {
+            const urlMatch = stations.find(s => s.baseUrl === currentUrl)
+            if (urlMatch) {
+              currentStationId = urlMatch.id
+            } else {
+              hasExternalConfig = true
+              currentStationId = null
+            }
+          }
+        }
       }
+    } else if (settingsSnapshot) {
+      hasExternalConfig = true
     }
-  ])
 
-  tray?.setContextMenu(contextMenu)
+    if (!settingsSnapshot && storedActiveId) {
+      currentStationId = storedActiveId
+    }
+
+    if ((currentStationId ?? null) !== (storedActiveId ?? null)) {
+      configManager.setActiveStationId(mode, currentStationId)
+    }
+
+    const sortedStations = [...stations].sort((a, b) => {
+      if (a.id === currentStationId) return -1
+      if (b.id === currentStationId) return 1
+
+      if (a.lastUsed && b.lastUsed) return b.lastUsed - a.lastUsed
+      if (a.lastUsed) return -1
+      if (b.lastUsed) return 1
+
+      return b.createdAt - a.createdAt
+    })
+
+    const stationMenuItems: Electron.MenuItemConstructorOptions[] = sortedStations.length > 0
+      ? sortedStations.map(station => ({
+          label: `${station.name}${station.id === currentStationId ? ' ✓' : ''}`,
+          type: 'normal' as const,
+          click: async () => {
+            try {
+              const baseConfig = configManager.getBaseConfig(mode)
+              const result = await settingsWriter.applyStation(station, baseConfig, mode)
+
+              if (result.success) {
+                configManager.updateStation(station.id, { lastUsed: Date.now() }, mode)
+                configManager.setActiveStationId(mode, station.id)
+
+                if (configManager.getActiveMode() !== mode) {
+                  configManager.setActiveMode(mode)
+                  if (mainWindow) {
+                    mainWindow.webContents.send('app-mode-changed', mode)
+                  }
+                }
+
+                if (mainWindow) {
+                  mainWindow.webContents.send('station-applied', { stationId: station.id, mode })
+                }
+
+                updateTrayMenu()
+
+                const isRunning = await settingsWriter.isTargetRunning(mode)
+                const body = mode === 'claude' && isRunning
+                  ? `${station.name} - ${claudeRestartHint}`
+                  : station.name
+
+                new Notification({
+                  title: applySuccessText,
+                  body
+                }).show()
+              } else {
+                new Notification({
+                  title: applyFailedText,
+                  body: result.error || 'Unknown error'
+                }).show()
+              }
+            } catch (error: any) {
+              new Notification({
+                title: applyFailedText,
+                body: error.message
+              }).show()
+            }
+          }
+        }))
+      : [
+          {
+            label: noStationsText,
+            enabled: false
+          }
+        ]
+
+    const submenu: Electron.MenuItemConstructorOptions[] = []
+    if (hasExternalConfig) {
+      submenu.push({
+        label: `⚠️ ${externalWarnings[mode]}`,
+        enabled: false
+      })
+      submenu.push({ type: 'separator' })
+    }
+    submenu.push(...stationMenuItems)
+
+    return {
+      label: `${sectionLabels[mode]}${mode === activeMode ? activeSuffix : ''}`,
+      submenu
+    }
+  }
+
+  const sections = modes.map(buildSection)
+
+  const template: Electron.MenuItemConstructorOptions[] = [
+    { label: modeHeader, enabled: false },
+    { type: 'separator' }
+  ]
+
+  sections.forEach((section, index) => {
+    template.push(section)
+    if (index < sections.length - 1) {
+      template.push({ type: 'separator' })
+    }
+  })
+
+  template.push({ type: 'separator' })
+  template.push({
+    label: showWindowText,
+    click: () => mainWindow?.show()
+  })
+  template.push({ type: 'separator' })
+  template.push({
+    label: quitText,
+    click: () => {
+      app.isQuitting = true
+      app.quit()
+    }
+  })
+
+  tray.setContextMenu(Menu.buildFromTemplate(template))
+
+  const tooltip = activeMode === 'codex'
+    ? isChinese ? 'CC Bridge - Codex 模式' : 'CC Bridge - Codex Mode'
+    : isChinese ? 'CC Bridge - Claude Code 模式' : 'CC Bridge - Claude Code Mode'
+  tray.setToolTip(tooltip)
 }
 
 app.whenReady().then(() => {
@@ -348,67 +423,121 @@ app.on('before-quit', () => {
  */
 function setupIPC() {
   // Station management
-  ipcMain.handle('get-stations', () => {
-    return configManager.getStations()
+  ipcMain.handle('get-stations', (_event, mode?: AppMode) => {
+    return configManager.getStations(mode)
   })
 
-  ipcMain.handle('get-station', (_event, id: string) => {
-    return configManager.getStation(id)
+  ipcMain.handle('get-all-stations', () => {
+    return configManager.getAllStations()
   })
 
-  ipcMain.handle('add-station', (_event, station: Omit<TransferStation, 'id' | 'createdAt'>) => {
-    const result = configManager.addStation(station)
-    updateTrayMenu() // Update tray menu when stations change
-    return result
+  ipcMain.handle('get-station', (_event, mode: AppMode, id: string) => {
+    return configManager.getStation(id, mode)
   })
 
-  ipcMain.handle('update-station', (_event, id: string, updates: Partial<TransferStation>) => {
-    const result = configManager.updateStation(id, updates)
-    updateTrayMenu() // Update tray menu when stations change
-    return result
-  })
+  ipcMain.handle(
+    'add-station',
+    (_event, mode: AppMode, station: Omit<TransferStation, 'id' | 'createdAt'>) => {
+      const result = configManager.addStation(station, mode)
+      updateTrayMenu()
+      return result
+    }
+  )
 
-  ipcMain.handle('delete-station', (_event, id: string) => {
-    const result = configManager.deleteStation(id)
-    updateTrayMenu() // Update tray menu when stations change
+  ipcMain.handle(
+    'update-station',
+    (_event, mode: AppMode, id: string, updates: Partial<TransferStation>) => {
+      const result = configManager.updateStation(id, updates, mode)
+      updateTrayMenu()
+      return result
+    }
+  )
+
+  ipcMain.handle('delete-station', (_event, mode: AppMode, id: string) => {
+    const result = configManager.deleteStation(id, mode)
+    updateTrayMenu()
     return result
   })
 
   // Base config
-  ipcMain.handle('get-base-config', () => {
-    return configManager.getBaseConfig()
+  ipcMain.handle('get-base-config', (_event, mode?: AppMode) => {
+    return configManager.getBaseConfig(mode)
   })
 
-  ipcMain.handle('update-base-config', (_event, config: BaseConfig) => {
-    configManager.updateBaseConfig(config)
+  ipcMain.handle(
+    'update-base-config',
+    (_event, mode: AppMode, config: ClaudeBaseConfig | CodexBaseConfig) => {
+      configManager.updateBaseConfig(config, mode)
+      return true
+    }
+  )
+
+  ipcMain.handle('get-active-station-id', (_event, mode?: AppMode) => {
+    return configManager.getActiveStationId(mode)
+  })
+
+  ipcMain.handle('get-active-station-ids', () => {
+    return {
+      claude: configManager.getActiveStationId('claude'),
+      codex: configManager.getActiveStationId('codex')
+    }
+  })
+
+  ipcMain.handle('get-app-mode', () => {
+    return configManager.getActiveMode()
+  })
+
+  ipcMain.handle('set-app-mode', (_event, mode: AppMode) => {
+    configManager.setActiveMode(mode)
+    updateTrayMenu()
+    if (mainWindow) {
+      mainWindow.webContents.send('app-mode-changed', mode)
+    }
     return true
   })
 
   // Settings writer
-  ipcMain.handle('apply-station', async (_event, stationId: string) => {
-    const station = configManager.getStation(stationId)
+  ipcMain.handle('apply-station', async (_event, mode: AppMode, stationId: string) => {
+    const station = configManager.getStation(stationId, mode)
     if (!station) {
       return { success: false, error: 'Station not found' }
     }
 
-    const baseConfig = configManager.getBaseConfig()
-    const result = await settingsWriter.applyStation(station, baseConfig)
+    const baseConfig = configManager.getBaseConfig(mode)
+    const result = await settingsWriter.applyStation(station, baseConfig, mode)
 
     // Update last used timestamp and tray menu
     if (result.success) {
-      configManager.updateStation(stationId, { lastUsed: Date.now() })
+      configManager.updateStation(stationId, { lastUsed: Date.now() }, mode)
+      configManager.setActiveStationId(mode, stationId)
+      if (configManager.getActiveMode() !== mode) {
+        configManager.setActiveMode(mode)
+        if (mainWindow) {
+          mainWindow.webContents.send('app-mode-changed', mode)
+        }
+      }
       updateTrayMenu() // Update tray to show new active station
+      if (mainWindow) {
+        mainWindow.webContents.send('station-applied', { stationId, mode })
+      }
     }
 
     return result
   })
 
-  ipcMain.handle('is-claude-running', async () => {
-    return await settingsWriter.isClaudeRunning()
+  ipcMain.handle('is-target-running', async (_event, mode?: AppMode) => {
+    return await settingsWriter.isTargetRunning(mode ?? configManager.getActiveMode())
   })
 
-  ipcMain.handle('get-current-settings', async () => {
-    return await settingsWriter.getCurrentSettings()
+  ipcMain.handle('get-current-settings', async (_event, mode?: AppMode) => {
+    return await settingsWriter.getCurrentSettings(mode ?? configManager.getActiveMode())
+  })
+
+  ipcMain.handle('get-current-settings-all', async () => {
+    return {
+      claude: await settingsWriter.getCurrentSettings('claude'),
+      codex: await settingsWriter.getCurrentSettings('codex')
+    }
   })
 
   // Utility
@@ -416,8 +545,8 @@ function setupIPC() {
     return configManager.getStorePath()
   })
 
-  ipcMain.handle('get-settings-path', () => {
-    return settingsWriter.getSettingsPath()
+  ipcMain.handle('get-settings-path', (_event, mode?: AppMode) => {
+    return settingsWriter.getSettingsPath(mode ?? configManager.getActiveMode())
   })
 
   // System preferences
@@ -437,9 +566,9 @@ function setupIPC() {
   })
 
   // Listen for station-applied notifications
-  ipcMain.on('station-applied', (_event, stationId: string) => {
+  ipcMain.on('station-applied', (_event, payload: { stationId: string; mode: AppMode }) => {
     if (mainWindow) {
-      mainWindow.webContents.send('station-applied', stationId)
+      mainWindow.webContents.send('station-applied', payload)
     }
   })
 

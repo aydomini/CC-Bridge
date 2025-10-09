@@ -66,6 +66,21 @@ export class SimpleStore<T extends Record<string, any>> {
   }
 
   /**
+   * Return full data snapshot
+   */
+  getAll(): T {
+    return { ...this.data }
+  }
+
+  /**
+   * Replace entire store (used for migrations)
+   */
+  replace(data: T): void {
+    this.data = data
+    this.save()
+  }
+
+  /**
    * Get file path
    */
   get path(): string {

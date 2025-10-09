@@ -4,257 +4,127 @@
 
 # 🌉 CC Bridge
 
-**一键轻松管理和切换多个 Claude Code 中转站**
+**一站式管理 Claude Code 与 Codex 中转站的桌面应用**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Release](https://img.shields.io/github/v/release/aydomini/CC-Bridge)](https://github.com/aydomini/CC-Bridge/releases)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)]()
+[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)]()
 
 ---
 
-### [中文](#中文) | [English](README_EN.md)
+### [中文](README.md) | [English](README_EN.md)
 
 </div>
 
 ---
 
-## ✨ 什么是 CC Bridge？
+## ✨ 项目简介
 
-CC Bridge 是一个**免费开源**的桌面应用程序，让你可以轻松管理多个 Claude Code 中转站配置。在不同的 API 端点之间切换、安全管理认证令牌、为每个站点自定义设置 - 一切都通过美观直观的界面完成。
+CC Bridge 是一款 **免费开源** 的 Electron + React 桌面应用，专为需要频繁切换多个中转站的开发者打造。现在同时支持 **Claude Code** 与 **OpenAI Codex** 两种模式，并提供统一的操作体验：
 
-适合以下开发者：
-- 🔄 使用多个 Claude Code 中转站
-- 🔐 需要安全的令牌管理
-- ⚙️ 想要为每个站点自定义配置
-- 💰 追踪 API 使用情况和余额
-- 🌍 多语言工作环境
+- 🔄 一键切换站点，自动备份历史配置  
+- 🔐 AES-256-CBC 设备级加密令牌  
+- ⚙️ 全局配置 + 站点定制 + 可视化预览  
+- 💰 余额追踪与多货币支持  
+- 🌍 内置中英双语，界面随时切换  
+- 🖥️ 菜单栏托盘列出双模式站点，随时切换
 
-### 📸 应用截图
+> **最新版本** 请见 [GitHub Releases](https://github.com/aydomini/CC-Bridge/releases)  
+> **当前构建**：macOS (Apple Silicon)。Windows / Linux / Intel macOS 仍在规划中，欢迎贡献。
 
-<div align="center">
+## 📦 安装说明
 
-**主界面 - 浅色模式**
+1. 从 [Releases](https://github.com/aydomini/CC-Bridge/releases) 下载最新版 DMG。  
+2. 打开 DMG，将 **CC Bridge** 拖入「应用程序」。  
+3. 第一次启动需要通过 Gatekeeper 验证：
+   - 右键点击 → *打开* → 再点 *打开*，或  
+   - 系统设置 ▸ 隐私与安全性 ▸ *仍要打开*，或  
+   - `xattr -cr "/Applications/CC Bridge.app"`
 
-<img src="screenshots/main-interface-light.png" alt="主界面 - 浅色模式" width="600">
+当前版本使用临时签名（Adhoc Signing），未购买 Apple 开发者证书；源码全部开放，可自行审计。
 
-**主界面 - 深色模式**
+## 🚀 快速上手
 
-<img src="screenshots/main-interface-dark.png" alt="主界面 - 深色模式" width="600">
+### 1. 添加站点
 
-**添加站点对话框**
+| 字段 | Claude 模式 | Codex 模式 |
+|------|-------------|------------|
+| 名称 | 站点名称（如“生产站”、“备用站”） | 同上 |
+| Provider Key | 不需要 | 可选标识，默认根据域名生成 |
+| URL | Claude 中转站地址 | Codex 中转站地址 |
+| Token | `ANTHROPIC_AUTH_TOKEN` | `OPENAI_API_KEY` |
+| 自定义配置 | JSON 覆盖全局设置 | 同上 |
 
-<img src="screenshots/add-station-dialog.png" alt="添加站点" width="600">
+- **快速导入**：Claude 模式支持粘贴 JSON，程序会自动修正中文标点、缺少逗号、智能引号、换行等问题。  
+- Codex 目前以表单方式录入（TOML 将在未来升级）。
 
-**快速导入功能**
+### 2. 应用配置
 
-<img src="screenshots/quick-import-dialog.png" alt="快速导入" width="600">
+- 选择目标站点 ➜ 点击 **应用**。  
+- Claude 写入 `~/.claude/settings.json`；Codex 写入 `~/.codex/config.toml` 与 `auth.json`。  
+- 应用前自动生成时间戳备份；如检测到 Claude Code 正在运行，会提醒手动重启。
 
-</div>
+### 3. 菜单栏托盘
 
-### 🎯 功能特性
+- 托盘菜单将 Claude / Codex 站点分组展示，可直接切换并同步到应用界面。  
+- 如检测到系统设置与应用站点不一致，会在对应组别显示 ⚠️ 提醒。
 
-- **🔄 一键切换站点**
-  - 从菜单栏或应用内即时切换配置
-  - 自动应用设置到 `~/.claude/settings.json`
-  - 应用前自动备份原有设置
+## ⚙️ 功能亮点
 
-- **🔐 军事级加密**
-  - 使用 AES-256-CBC 加密认证令牌
-  - 设备专属加密密钥
-  - 令牌永不明文存储
+- **双模式全局配置**  
+  在「全局配置」中可分别维护 Claude / Codex 的默认值；清空文本并保存会自动恢复到内置安全配置。
 
-- **⚙️ 灵活配置系统**
-  - 全局基础配置用于通用设置
-  - 每个站点的自定义配置
-  - 智能配置合并：基础 + 站点 + 自定义
-  - 应用前可视化 JSON 预览
+- **令牌安全策略**  
+  使用设备路径派生的 AES-256-CBC 密钥，加密存储站点令牌，且支持硬件变更后的自动迁移。
 
-- **💰 余额追踪**
-  - 手动输入余额（已为未来 API 集成做好准备）
-  - 支持多种货币
-  - 跨站点追踪使用情况
+- **预览体验优化**  
+  站点列表、配置预览、标题区均针对中英双语做了布局稳定优化，避免切换语言时高度跳动。
 
-- **🌍 国际化**
-  - 内置中英文支持
-  - 系统语言自动检测
-  - 易于添加更多语言
+- **UI 精简调整**  
+  顶部只保留主题切换、语言切换、全局配置、添加站点四个按钮，托盘承担隐藏/切换职责，界面更清爽。
 
-- **🎨 精美界面**
-  - 原生 macOS 集成与交通灯按钮
-  - 支持系统深色模式
-  - 流畅的动画和过渡效果
-  - 敏感数据隐私保护
+## 🛠️ 本地开发
 
-### 📦 安装
-
-#### 下载
-
-从 [**Releases**](https://github.com/aydomini/CC-Bridge/releases) 获取最新版本
-
-| 平台 | 文件 | 状态 |
-|------|------|------|
-| **macOS (Apple Silicon)** | `CC Bridge-1.1.1-arm64.dmg` | ✅ 已测试 |
-| **macOS (Intel)** | - | ⚠️ 暂未提供 |
-| **Windows** | - | ⚠️ 暂未提供 |
-| **Linux** | - | ⚠️ 暂未提供 |
-
-> **注意**：v1.1.1 已支持 macOS Apple Silicon (M1/M2/M3/M4)。Intel Mac、Windows 和 Linux 版本暂未提供。欢迎社区贡献！
-
-#### 系统要求
-
-- **macOS**: 10.13 (High Sierra) 或更高版本，Apple Silicon (M1/M2/M3/M4) 芯片
-- **Claude Code**: 必须安装在 `~/.claude/`
-
-#### 安装步骤
-
-1. 下载 `CC Bridge-1.1.1-arm64.dmg`
-2. 打开 DMG 文件
-3. 将 CC Bridge 拖拽到应用程序文件夹
-4. **首次打开时**：由于应用未经 Apple 公证，macOS 会阻止运行
-
-**解决"已损坏，无法打开"的问题：**
-
-**方法 1：右键打开（推荐）**
-1. 在应用程序文件夹中，右键点击 CC Bridge
-2. 选择"打开"
-3. 在弹出的对话框中点击"打开"
-
-**方法 2：系统设置**
-1. 打开"系统设置" → "隐私与安全性"
-2. 找到"CC Bridge 已被阻止"的提示
-3. 点击"仍要打开"
-
-**方法 3：命令行（高级用户）**
-```bash
-xattr -cr "/Applications/CC Bridge.app"
-```
-
-> **为什么会这样？** CC Bridge 是开源免费应用，未经 Apple 公证（需要 $99/年开发者账号）。代码完全开源透明，可在 GitHub 审计安全性。
->
-> **关于代码签名：**
-> - 当前版本使用临时签名（Adhoc Signing）
-> - 使用嵌入式 Hardened Runtime 和系统权限
-> - 仍需用户手动授权以启动应用
-> - 未来计划获取开发者账号进行正式签名
-
-### 🚀 快速开始
-
-1. **添加第一个站点**
-   - 点击 ➕ **添加站点** 按钮
-   - 输入站点名称（如 "生产环境"、"备用站点"）
-   - 粘贴 API 基础 URL
-   - 粘贴认证令牌
-   - （可选）设置自定义配置
-
-2. **应用配置**
-   - 选择要使用的站点
-   - 点击 **应用** 激活
-   - CC Bridge 会备份现有设置并应用新配置
-
-3. **快速切换**
-   - 使用菜单栏图标即时切换
-   - 应用内显示站点状态（活跃/非活跃）
-   - 追踪最后使用时间
-
-4. **高级配置**（可选）
-   - 点击 **基础配置** 设置全局默认值
-   - 使用 **自定义配置** 为单个站点设置覆盖
-   - 应用前预览合并后的设置
-
-### 🛠️ 开发
-
-#### 前置要求
-
-- Node.js 16+ 和 npm
-- Git
-
-#### 设置
+环境要求：**Node.js 16+**、**npm**、**git**
 
 ```bash
-# 克隆仓库
 git clone https://github.com/aydomini/CC-Bridge.git
 cd CC-Bridge
-
-# 安装依赖
 npm install
 
-# 开发模式运行（支持热重载）
+# 开发模式（带热重载）
 npm run dev
 
-# 构建 TypeScript 和 React 应用
+# 构建 React / TypeScript
 npm run build
 
-# 打包分发版本
+# 打包 Electron
 npm run package
 ```
 
-#### 项目结构
+目录结构简要：
 
 ```
 CC-Bridge/
-├── electron/           # Electron 主进程
-│   ├── main.ts        # 应用入口，IPC 处理器
-│   ├── preload.ts     # 上下文桥接
-│   └── services/      # 核心服务
-│       ├── configManager.ts    # 站点的 CRUD 操作
-│       ├── settingsWriter.ts   # 生成 settings.json
-│       └── encryption.ts       # 令牌加密
-├── src/               # React 渲染进程
-│   ├── App.tsx        # 主组件
-│   ├── components/    # UI 组件
-│   ├── types/         # TypeScript 类型定义
-│   └── i18n/          # 翻译文件
-└── build/             # 构建资源
+├── electron/          # 主进程：窗口、托盘、IPC
+│   ├── main.ts        # 应用入口
+│   ├── preload.ts     # 暴露 electronAPI
+│   └── services/      # 配置存储、加密、文件写入
+├── src/               # 渲染进程：React + TS
+│   ├── App.tsx        # 核心页面逻辑
+│   ├── components/    # UI 组件（弹窗、列表、图标）
+│   ├── contexts/      # 主题 / 语言上下文
+│   └── types/         # 共享类型定义
+└── build/             # 静态资源、签名配置
 ```
 
-> 完整架构文档请参阅项目源码中的 CLAUDE.md
+## 🤝 参与项目
 
-### 🤝 贡献
-
-欢迎贡献！这是一个为 Claude Code 社区打造的开源项目。
-
-**贡献方式：**
-- 🐛 通过 [GitHub Issues](https://github.com/aydomini/CC-Bridge/issues) 报告 bug
-- 💡 提出功能建议或改进意见
-- 🌍 添加更多语言的翻译
-- 📖 改进文档
-- 🔧 提交 pull request
-
-**提交 PR 前：**
-1. 确保代码遵循现有风格
-2. 在你的平台上测试
-3. 更新相关文档
-4. 将自己添加到贡献者名单！
-
-### 📝 开源协议
-
-MIT License - **免费开源**
-
-Copyright (c) 2025 aydomini
-
-完整详情请查看 [LICENSE](LICENSE) 文件。
-
-### 🙏 致谢
-
-- 为 Claude Code 社区用 ❤️ 构建
-- 基于 [Electron](https://www.electronjs.org/) + [React](https://react.dev/)
-- 图标和 UI 设计灵感来自 macOS 设计原则
-
-### 📞 支持
-
-- 🐛 [报告问题](https://github.com/aydomini/CC-Bridge/issues)
-- 💬 [讨论区](https://github.com/aydomini/CC-Bridge/discussions)
-
-### ⭐ Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=aydomini/CC-Bridge&type=Date)](https://star-history.com/#aydomini/CC-Bridge&Date)
-
-**如果觉得有用,请给个 Star ⭐！**
+1. Fork & 基于 `main` 分支创建功能分支。  
+2. 注意同时支持 Claude / Codex 场景，文档需同步更新中英文。  
+3. 提交 PR 前务必执行 `npm run build` 并附上测试说明或截图。  
+4. Bug 与需求建议：请至 [GitHub Issues](https://github.com/aydomini/CC-Bridge/issues)。
 
 ---
 
-<div align="center">
-
-为 Claude Code 社区用 ❤️ 构建
-
-</div>
+爱折腾，就来一起构建更好用的 CC Bridge 吧！🌟 如果项目帮到了你，欢迎点个 Star 支持。

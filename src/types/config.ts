@@ -1,7 +1,14 @@
+export type AppMode = 'claude' | 'codex'
+
+/**
+ * Currency type
+ */
+export type Currency = 'USD' | 'CNY'
+
 /**
  * Base configuration template for Claude Code settings
  */
-export interface BaseConfig {
+export interface ClaudeBaseConfig {
   env: {
     CLAUDE_CODE_MAX_OUTPUT_TOKENS?: string
     CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC?: string
@@ -19,27 +26,29 @@ export interface BaseConfig {
 }
 
 /**
- * Currency type
+ * Base configuration template for Codex settings
  */
-export type Currency = 'USD' | 'CNY'
+export interface CodexBaseConfig {
+  modelProvider?: string
+  model: string
+  modelReasoningEffort: string
+  disableResponseStorage: boolean
+  wireApi: string
+  requiresOpenaiAuth: boolean
+  additionalSettings?: Record<string, string | number | boolean>
+}
 
-/**
- * Transfer station configuration
- */
-export interface TransferStation {
+interface StationCommon {
   id: string
   name: string
-  authToken: string // ANTHROPIC_AUTH_TOKEN (encrypted in storage)
-  baseUrl: string // ANTHROPIC_BASE_URL
-  favicon?: string // Station favicon URL
+  authToken: string
+  baseUrl: string
+  favicon?: string
 
   // Balance info
   balance?: number
   currency?: Currency // 'USD' or 'CNY', default: 'USD'
   balanceLastUpdated?: number // timestamp
-
-  // Custom configuration (overrides base config)
-  customConfig?: Partial<BaseConfig>
 
   // Metadata
   createdAt: number
@@ -47,12 +56,35 @@ export interface TransferStation {
 }
 
 /**
+ * Transfer station configuration
+ */
+export interface ClaudeTransferStation extends StationCommon {
+  customConfig?: Partial<ClaudeBaseConfig>
+}
+
+export interface CodexTransferStation extends StationCommon {
+  providerKey?: string
+  customConfig?: Partial<CodexBaseConfig>
+}
+
+export type TransferStation = ClaudeTransferStation | CodexTransferStation
+
+export type BaseConfig = ClaudeBaseConfig
+
+interface ModeState<B, T extends TransferStation> {
+  baseConfig: B
+  stations: T[]
+  activeStationId?: string | null
+}
+
+/**
  * Application configuration
  */
 export interface AppConfig {
   version: string
-  baseConfig: BaseConfig
-  stations: TransferStation[]
+  activeMode: AppMode
+  claude: ModeState<ClaudeBaseConfig, ClaudeTransferStation>
+  codex: ModeState<CodexBaseConfig, CodexTransferStation>
   settings: {
     storageLocation: string // custom storage path
     autoBackup: boolean
@@ -81,13 +113,40 @@ export interface ClaudeSettings {
   }
 }
 
+export interface CodexSettings {
+  modelProvider: string
+  model: string
+  modelReasoningEffort?: string
+  disableResponseStorage?: boolean
+  baseUrl?: string
+  wireApi?: string
+  requiresOpenaiAuth?: boolean
+  additionalSettings?: Record<string, string | number | boolean>
+  authToken?: string
+  providerKey?: string
+}
+
+export type ActiveSettings =
+  | { mode: 'claude'; settings: ClaudeSettings }
+  | { mode: 'codex'; settings: CodexSettings }
+
 /**
  * Default base configuration
  */
-export const DEFAULT_BASE_CONFIG: BaseConfig = {
+export const DEFAULT_BASE_CONFIG: ClaudeBaseConfig = {
   env: {},
   permissions: {
     allow: [],
     deny: []
   }
+}
+
+export const DEFAULT_CODEX_BASE_CONFIG: CodexBaseConfig = {
+  modelProvider: '',
+  model: 'gpt-5-codex',
+  modelReasoningEffort: 'high',
+  disableResponseStorage: true,
+  wireApi: 'responses',
+  requiresOpenaiAuth: true,
+  additionalSettings: {}
 }

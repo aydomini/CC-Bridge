@@ -12,7 +12,7 @@ const translations = {
   en: {
     // App
     appTitle: 'CC Bridge',
-    appSubtitle: 'One-click switch for Claude Code transfer stations',
+    appSubtitle: 'Manage Claude Code & Codex transfer stations with one click',
 
     // Header
     addStation: 'Add Station',
@@ -21,6 +21,10 @@ const translations = {
     darkMode: 'Dark Mode',
     lightMode: 'Light Mode',
     switchLanguage: 'Switch Language',
+    switchMode: 'Switch Mode',
+    claudeMode: 'Claude Code',
+    codexMode: 'Codex',
+    currentMode: 'Mode',
 
     // Station List
     stationName: 'Name',
@@ -36,6 +40,10 @@ const translations = {
     notSet: 'Not set',
     unknownConfig: 'Unknown Configuration',
     externalConfigHint: 'Current settings.json contains a configuration not managed by this app',
+    unknownConfigClaude: 'Current Claude Code configuration is not managed by this app',
+    unknownConfigCodex: 'Current Codex configuration is not managed by this app',
+    externalConfigHintClaude: 'Select a managed Claude Code station or switch mode to clear this warning.',
+    externalConfigHintCodex: 'Select a managed Codex station or switch mode to clear this warning.',
 
     // Dialogs
     cancel: 'Cancel',
@@ -53,6 +61,8 @@ const translations = {
     editStation: 'Edit Station',
     addStationTitle: 'Add Station',
     customConfig: 'Custom Config',
+    providerKey: 'Provider Key',
+    providerKeyPlaceholder: 'Provider identifier (optional)',
     form: 'Manual Config',
     json: 'Quick Import',
     simple: 'Simple',
@@ -64,6 +74,7 @@ const translations = {
     jsonCopied: 'Copied!',
     noCustomConfig: 'No custom configuration',
     clickToAdd: 'Enable custom config to add station-specific settings',
+    codexConfigPreview: 'Codex Config Preview',
 
     // Placeholders
     stationNamePlaceholder: 'Station name',
@@ -111,7 +122,7 @@ const translations = {
   zh: {
     // App
     appTitle: 'CC Bridge',
-    appSubtitle: '一键切换 Claude Code 中转站',
+    appSubtitle: '一键管理 Claude Code 与 Codex 中转站',
 
     // Header
     addStation: '添加站点',
@@ -120,6 +131,10 @@ const translations = {
     darkMode: '暗色模式',
     lightMode: '亮色模式',
     switchLanguage: '切换语言',
+    switchMode: '切换模式',
+    claudeMode: 'Claude Code',
+    codexMode: 'Codex',
+    currentMode: '模式',
 
     // Station List
     stationName: '名称',
@@ -135,6 +150,10 @@ const translations = {
     notSet: '未设置',
     unknownConfig: '未知配置',
     externalConfigHint: '当前 settings.json 包含非本应用管理的配置',
+    unknownConfigClaude: '当前 Claude Code 配置不受本应用管理',
+    unknownConfigCodex: '当前 Codex 配置不受本应用管理',
+    externalConfigHintClaude: '请选择列表中的 Claude Code 站点或切换模式以清除该提示。',
+    externalConfigHintCodex: '请选择列表中的 Codex 站点或切换模式以清除该提示。',
 
     // Dialogs
     cancel: '取消',
@@ -152,6 +171,8 @@ const translations = {
     editStation: '编辑站点',
     addStationTitle: '添加站点',
     customConfig: '自定义配置',
+    providerKey: '提供方标识',
+    providerKeyPlaceholder: '提供方标识（可选）',
     form: '手动配置',
     json: '快速导入',
     simple: '简单',
@@ -163,6 +184,7 @@ const translations = {
     jsonCopied: '已复制！',
     noCustomConfig: '无自定义配置',
     clickToAdd: '启用自定义配置以添加站点特定设置',
+    codexConfigPreview: 'Codex 配置预览',
 
     // Placeholders
     stationNamePlaceholder: '站点名称',

@@ -1,30 +1,43 @@
 import { contextBridge, ipcRenderer, shell } from 'electron'
-import { TransferStation, BaseConfig } from './types/config.js'
+import {
+  TransferStation,
+  ClaudeBaseConfig,
+  CodexBaseConfig,
+  AppMode,
+  ActiveSettings
+} from './types/config.js'
 
 // Expose protected methods that allow the renderer process to use
 // ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
   // Station management
-  getStations: () => ipcRenderer.invoke('get-stations'),
-  getStation: (id: string) => ipcRenderer.invoke('get-station', id),
-  addStation: (station: Omit<TransferStation, 'id' | 'createdAt'>) =>
-    ipcRenderer.invoke('add-station', station),
-  updateStation: (id: string, updates: Partial<TransferStation>) =>
-    ipcRenderer.invoke('update-station', id, updates),
-  deleteStation: (id: string) => ipcRenderer.invoke('delete-station', id),
+  getStations: (mode?: AppMode) => ipcRenderer.invoke('get-stations', mode),
+  getStationsByMode: () => ipcRenderer.invoke('get-all-stations'),
+  getStation: (mode: AppMode, id: string) => ipcRenderer.invoke('get-station', mode, id),
+  addStation: (mode: AppMode, station: Omit<TransferStation, 'id' | 'createdAt'>) =>
+    ipcRenderer.invoke('add-station', mode, station),
+  updateStation: (mode: AppMode, id: string, updates: Partial<TransferStation>) =>
+    ipcRenderer.invoke('update-station', mode, id, updates),
+  deleteStation: (mode: AppMode, id: string) => ipcRenderer.invoke('delete-station', mode, id),
 
   // Base config
-  getBaseConfig: () => ipcRenderer.invoke('get-base-config'),
-  updateBaseConfig: (config: BaseConfig) => ipcRenderer.invoke('update-base-config', config),
+  getBaseConfig: (mode?: AppMode) => ipcRenderer.invoke('get-base-config', mode),
+  updateBaseConfig: (mode: AppMode, config: ClaudeBaseConfig | CodexBaseConfig) =>
+    ipcRenderer.invoke('update-base-config', mode, config),
+  getActiveStationId: (mode?: AppMode) => ipcRenderer.invoke('get-active-station-id', mode),
+  getActiveStationIds: () => ipcRenderer.invoke('get-active-station-ids'),
 
   // Settings writer
-  applyStation: (stationId: string) => ipcRenderer.invoke('apply-station', stationId),
-  isClaudeRunning: () => ipcRenderer.invoke('is-claude-running'),
-  getCurrentSettings: () => ipcRenderer.invoke('get-current-settings'),
+  applyStation: (mode: AppMode, stationId: string) => ipcRenderer.invoke('apply-station', mode, stationId),
+  isTargetRunning: (mode?: AppMode) => ipcRenderer.invoke('is-target-running', mode),
+  getCurrentSettings: (mode?: AppMode): Promise<ActiveSettings | null> =>
+    ipcRenderer.invoke('get-current-settings', mode),
+  getCurrentSettingsAll: (): Promise<Record<AppMode, ActiveSettings | null>> =>
+    ipcRenderer.invoke('get-current-settings-all'),
 
   // Utility
   getStorePath: () => ipcRenderer.invoke('get-store-path'),
-  getSettingsPath: () => ipcRenderer.invoke('get-settings-path'),
+  getSettingsPath: (mode?: AppMode) => ipcRenderer.invoke('get-settings-path', mode),
   getSystemPreferences: () => ipcRenderer.invoke('get-system-preferences'),
   hideWindow: () => ipcRenderer.send('hide-window'),
   notifyLanguageChange: (language: 'en' | 'zh') => ipcRenderer.send('language-changed', language),
@@ -42,7 +55,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onUpdateDownloaded: (callback: () => void) => {
     ipcRenderer.on('update-downloaded', callback)
   },
-  onStationApplied: (callback: (stationId: string) => void) => {
-    ipcRenderer.on('station-applied', (_event, stationId) => callback(stationId))
+  onStationApplied: (callback: (payload: { stationId: string; mode: AppMode }) => void) => {
+    ipcRenderer.on('station-applied', (_event, payload) => callback(payload))
+  },
+
+  // Mode management
+  getAppMode: (): Promise<AppMode> => ipcRenderer.invoke('get-app-mode'),
+  setAppMode: (mode: AppMode) => ipcRenderer.invoke('set-app-mode', mode),
+  onAppModeChanged: (callback: (mode: AppMode) => void) => {
+    ipcRenderer.on('app-mode-changed', (_event, mode) => callback(mode))
   }
 })
