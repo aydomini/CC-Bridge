@@ -180,26 +180,8 @@ const BaseConfigDialog: React.FC<Props> = ({ mode, onClose }) => {
 
                   try {
                     const parsed = JSON.parse(newDisplay)
-                    const current = JSON.parse(JSON.stringify(claudeConfig))
-
-                    if (parsed.env) {
-                      Object.keys(parsed.env).forEach(key => {
-                        if (key === 'ANTHROPIC_AUTH_TOKEN' || key === 'ANTHROPIC_BASE_URL') {
-                          if (parsed.env[key] !== t('hidden')) {
-                            current.env[key] = parsed.env[key]
-                          }
-                        } else {
-                          current.env[key] = parsed.env[key]
-                        }
-                      })
-                    }
-
-                    if (parsed.permissions) {
-                      current.permissions = parsed.permissions
-                    }
-
-                    setClaudeConfig(current)
-                    setJsonValue(JSON.stringify(current, null, 2))
+                    setClaudeConfig(parsed)
+                    setJsonValue(newDisplay)
                     setJsonError('')
                   } catch {
                     // ignore while typing invalid JSON

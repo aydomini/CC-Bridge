@@ -7,26 +7,20 @@ export type Currency = 'USD' | 'CNY'
 
 /**
  * Base configuration template for Claude Code settings
+ * Supports arbitrary additional fields at top level
  */
 export interface ClaudeBaseConfig {
-  env: {
-    CLAUDE_CODE_MAX_OUTPUT_TOKENS?: string
-    CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC?: string
-    API_TIMEOUT_MS?: string
-    BASH_DEFAULT_TIMEOUT_MS?: string
-    BASH_MAX_TIMEOUT_MS?: string
-    MCP_TIMEOUT?: string
-    MCP_TOOL_TIMEOUT?: string
-    CLAUDE_API_TIMEOUT?: string
-  }
-  permissions: {
+  env?: Record<string, string>
+  permissions?: {
     allow: string[]
     deny: string[]
   }
+  [key: string]: any // Allow arbitrary additional fields
 }
 
 /**
  * Base configuration template for Codex settings
+ * Supports arbitrary additional fields at top level
  */
 export interface CodexBaseConfig {
   modelProvider?: string
@@ -36,6 +30,7 @@ export interface CodexBaseConfig {
   wireApi: string
   requiresOpenaiAuth: boolean
   additionalSettings?: Record<string, string | number | boolean>
+  [key: string]: any // Allow arbitrary additional fields
 }
 
 interface StationCommon {

@@ -18,16 +18,19 @@ const APP_VERSION = '2.0.0'
 type ModeKey = 'claude' | 'codex'
 
 const cloneClaudeBaseConfig = (base?: ClaudeBaseConfig): ClaudeBaseConfig => ({
+  ...base, // Preserve all fields including additional ones
   env: {
+    ...(DEFAULT_BASE_CONFIG.env ?? {}),
     ...(base?.env ?? {})
   },
   permissions: {
-    allow: [...(base?.permissions?.allow ?? [])],
-    deny: [...(base?.permissions?.deny ?? [])]
+    allow: [...(DEFAULT_BASE_CONFIG.permissions?.allow ?? []), ...(base?.permissions?.allow ?? [])],
+    deny: [...(DEFAULT_BASE_CONFIG.permissions?.deny ?? []), ...(base?.permissions?.deny ?? [])]
   }
 })
 
 const cloneCodexBaseConfig = (base?: CodexBaseConfig): CodexBaseConfig => ({
+  ...base, // Preserve all fields including additional ones
   modelProvider: base?.modelProvider ?? DEFAULT_CODEX_BASE_CONFIG.modelProvider,
   model: base?.model ?? DEFAULT_CODEX_BASE_CONFIG.model,
   modelReasoningEffort: base?.modelReasoningEffort ?? DEFAULT_CODEX_BASE_CONFIG.modelReasoningEffort,

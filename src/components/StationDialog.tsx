@@ -269,10 +269,16 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
       delete customEnv.ANTHROPIC_AUTH_TOKEN
       delete customEnv.ANTHROPIC_BASE_URL
 
+      // v1.2.3: Preserve all top-level custom fields
       const customCfg: Partial<ClaudeBaseConfig> = {
+        ...config,  // Copy all top-level fields first
         env: customEnv,
         permissions
       }
+
+      // Remove extracted fields that are now stored separately
+      delete (customCfg as any).ANTHROPIC_AUTH_TOKEN
+      delete (customCfg as any).ANTHROPIC_BASE_URL
 
       return {
         authToken: token,

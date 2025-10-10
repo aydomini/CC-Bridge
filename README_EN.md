@@ -33,7 +33,7 @@ CC Bridge is a **free & open-source** Electron + React desktop application desig
 - 🖥️ **Menu Bar Tray**: Persistent tray icon for quick station/mode switching without opening the main window
 - 📦 **Quick Import**: Claude mode supports JSON quick import with auto-fix for format issues (Chinese punctuation, missing commas, smart quotes, etc.)
 
-> **Latest Version**: v1.2.1 - [Download](https://github.com/aydomini/CC-Bridge/releases)
+> **Latest Version**: v1.2.3 - [Download](https://github.com/aydomini/CC-Bridge/releases)
 > **Current Platform**: macOS (Apple Silicon). Windows / Linux / Intel Mac are planned—PRs welcome!
 
 ---
@@ -118,11 +118,32 @@ Click the "Quick Import" button and paste JSON configuration:
 }
 ```
 
+**✨ New in v1.2.3**: Quick import now supports top-level custom fields! You can import configurations like this:
+
+```json
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "sk-ant-xxxxx",
+    "ANTHROPIC_BASE_URL": "https://api.example.com",
+    "CUSTOM_VAR": "value"
+  },
+  "permissions": {
+    "allow": ["read", "write"],
+    "deny": []
+  },
+  "timeout": 5000,
+  "customSettings": {
+    "feature": "enabled"
+  }
+}
+```
+
 The app automatically fixes common format issues:
 - ✅ Chinese punctuation (，。"") → English punctuation
 - ✅ Missing commas auto-added
 - ✅ Smart quotes ("") → Standard quotes
 - ✅ Newline normalization
+- ✅ **Preserves all top-level custom fields** (v1.2.3+)
 
 ### 3️⃣ Apply Configuration
 
@@ -142,7 +163,27 @@ Click the **"⚙️ Global Config"** button at the top to edit:
 #### Base Config
 
 - **Claude Mode**: Edit default environment variables (`env`) and permissions config (`permissions`)
+  - ✨ **New in v1.2.2**: Supports arbitrary custom fields! Add top-level fields like `timeout`, `retryAttempts`, etc.
+  - The `env` field supports any custom environment variables (e.g., `MY_CUSTOM_VAR`)
+  - Example:
+    ```json
+    {
+      "env": {
+        "API_TIMEOUT_MS": "30000",
+        "CUSTOM_VAR": "value"
+      },
+      "permissions": {
+        "allow": ["read", "write"],
+        "deny": []
+      },
+      "timeout": 5000,
+      "customSettings": {
+        "feature": "enabled"
+      }
+    }
+    ```
 - **Codex Mode**: Edit default model configuration (`model`, `model_provider`, etc.)
+  - ✨ **New in v1.2.2**: Also supports top-level custom field extensions
 
 File path hints:
 - Claude: `~/.claude/settings.json`
