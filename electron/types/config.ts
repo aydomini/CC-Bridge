@@ -61,6 +61,7 @@ export interface ClaudeTransferStation extends StationCommon {
 export interface CodexTransferStation extends StationCommon {
   providerKey?: string
   customConfig?: Partial<CodexBaseConfig>
+  rawToml?: string // Additional raw TOML configuration (e.g., MCP servers)
 }
 
 export type TransferStation = ClaudeTransferStation | CodexTransferStation

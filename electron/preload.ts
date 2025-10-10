@@ -43,6 +43,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   notifyLanguageChange: (language: 'en' | 'zh') => ipcRenderer.send('language-changed', language),
   showNotification: (title: string, body: string) => ipcRenderer.send('show-notification', title, body),
 
+  // Project config files
+  getProjectConfig: (mode: AppMode) => ipcRenderer.invoke('get-project-config', mode),
+  updateProjectConfig: (mode: AppMode, content: string) =>
+    ipcRenderer.invoke('update-project-config', mode, content),
+
   // Shell
   shell: {
     openExternal: (url: string) => shell.openExternal(url)

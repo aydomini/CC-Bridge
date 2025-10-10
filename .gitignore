@@ -38,9 +38,11 @@ out/
 
 # Local Claude Code data
 .claude/
+.codex/
 
 # User data (for testing)
 config.json
 
-# Private documentation
+# Private documentation (project-level configs)
 CLAUDE.md
+AGENTS.md

@@ -22,15 +22,33 @@
 
 CC Bridge is a **free & open-source** Electron + React desktop application for engineers who need to switch between multiple AI transfer stations. It now supports both **Claude Code** and **OpenAI Codex** style stations with shared workflows:
 
-- 🔄 One-click station switching with automatic backups  
-- 🔐 AES-256-CBC device-bound token encryption  
-- ⚙️ Global defaults + per-station overrides + visual preview  
-- 💰 Optional balance tracking with multi-currency support  
-- 🌍 Built-in English / Chinese UI and dark mode styling  
+- 🔄 One-click station switching with automatic backups
+- 🔐 AES-256-CBC device-bound token encryption
+- ⚙️ Global defaults + per-station overrides + visual preview
+- 💰 Optional balance tracking with multi-currency support
+- 🌍 Built-in English / Chinese UI and dark mode styling
 - 🖥️ Tray menu for instant switching across both modes
 
-> **Latest release:** see [GitHub Releases](https://github.com/aydomini/CC-Bridge/releases)  
+> **Latest release:** see [GitHub Releases](https://github.com/aydomini/CC-Bridge/releases)
 > **Current build:** macOS (Apple Silicon). Windows, Linux, Intel macOS are planned—PRs welcome!
+
+## 📸 Screenshots
+
+<div align="center">
+
+### Main Interface (Light Mode)
+<img src="screenshots/main-interface-light.png" alt="Main Interface Light" width="700">
+
+### Main Interface (Dark Mode)
+<img src="screenshots/main-interface-dark.png" alt="Main Interface Dark" width="700">
+
+### Add Station Dialog
+<img src="screenshots/add-station-dialog.png" alt="Add Station" width="700">
+
+### Quick Import (JSON)
+<img src="screenshots/quick-import-dialog.png" alt="Quick Import" width="700">
+
+</div>
 
 ## 📦 Installation
 
@@ -118,12 +136,18 @@ CC-Bridge/
 
 ## 🤝 Contributing
 
-1. Fork & branch from `main`.  
-2. Keep changes mode-aware (Claude & Codex) and update both READMEs.  
-3. Run `npm run build` before opening a PR.  
+1. Fork & branch from `main`.
+2. Keep changes mode-aware (Claude & Codex) and update both READMEs.
+3. Run `npm run build` before opening a PR.
 4. Describe tests performed and screenshots for UI tweaks.
 
 Issues & feature requests: [GitHub Issues](https://github.com/aydomini/CC-Bridge/issues)
+
+---
+
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=aydomini/CC-Bridge&type=Date)](https://star-history.com/#aydomini/CC-Bridge&Date)
 
 ---
 

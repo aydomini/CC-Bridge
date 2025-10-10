@@ -41,6 +41,11 @@ declare global {
       hideWindow: () => void
       notifyLanguageChange: (language: 'en' | 'zh') => void
       showNotification: (title: string, body: string) => void
+
+      // Project config files
+      getProjectConfig: (mode: AppMode) => Promise<string>
+      updateProjectConfig: (mode: AppMode, content: string) => Promise<boolean>
+
       shell: {
         openExternal: (url: string) => Promise<void>
       }

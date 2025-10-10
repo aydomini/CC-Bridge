@@ -70,6 +70,36 @@ const ensureDir = async (filePath: string) => {
   await fs.mkdir(dir, { recursive: true })
 }
 
+/**
+ * Clean up old backup files, keeping only the most recent N backups
+ */
+const cleanupOldBackups = async (filePath: string, keepCount: number = 1): Promise<void> => {
+  try {
+    const dir = path.dirname(filePath)
+    const fileName = path.basename(filePath)
+
+    // Find all backup files matching pattern: filename.backup.*
+    const files = await fs.readdir(dir)
+    const backups = files
+      .filter(f => f.startsWith(`${fileName}.backup.`))
+      .map(f => ({
+        name: f,
+        timestamp: parseInt(f.split('.backup.')[1] || '0'),
+        path: path.join(dir, f)
+      }))
+      .sort((a, b) => b.timestamp - a.timestamp) // Sort by timestamp descending (newest first)
+
+    // Delete backups beyond keepCount
+    const toDelete = backups.slice(keepCount)
+    for (const backup of toDelete) {
+      await fs.unlink(backup.path)
+    }
+  } catch (error) {
+    // Silently ignore cleanup errors to not affect main backup operation
+    console.warn('[SettingsWriter] Failed to cleanup old backups:', error)
+  }
+}
+
 const backupFile = async (filePath: string): Promise<string | null> => {
   try {
     await fs.access(filePath)
@@ -79,6 +109,10 @@ const backupFile = async (filePath: string): Promise<string | null> => {
 
   const backupPath = `${filePath}.backup.${Date.now()}`
   await fs.copyFile(filePath, backupPath)
+
+  // Auto cleanup old backups, keeping only the most recent one
+  await cleanupOldBackups(filePath, 1)
+
   return backupPath
 }
 
@@ -221,6 +255,13 @@ class SettingsWriter {
     lines.push(`base_url = "${station.baseUrl}"`)
     lines.push(`wire_api = "${merged.wireApi}"`)
     lines.push(`requires_openai_auth = ${merged.requiresOpenaiAuth ? 'true' : 'false'}`)
+
+    // Append raw TOML configuration if provided
+    if (station.rawToml && station.rawToml.trim()) {
+      lines.push('')
+      lines.push('# --- Additional Configuration ---')
+      lines.push(station.rawToml.trim())
+    }
 
     const settings: CodexSettings = {
       modelProvider,

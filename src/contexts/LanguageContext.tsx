@@ -70,6 +70,7 @@ const translations = {
     faviconPlaceholder: 'Favicon URL (optional)',
     enableCustomConfig: 'Enable custom configuration',
     customConfigHint: 'Override global configuration for this station',
+    customConfigHintCodex: 'Add additional TOML configuration (e.g., MCP servers)',
     copyJson: 'Copy JSON',
     jsonCopied: 'Copied!',
     noCustomConfig: 'No custom configuration',
@@ -117,7 +118,15 @@ const translations = {
     deleteVariable: 'Delete',
     baseConfigSaved: '✓ Base configuration saved successfully!',
     copiedToClipboard: '✓ Copied to clipboard!',
-    hidden: '*** Hidden ***'
+    hidden: '*** Hidden ***',
+
+    // Project Config Dialog
+    projectConfigTitle: 'Project Configuration',
+    projectConfigDescription: 'Edit project-level configuration file',
+    projectConfigSaved: '✓ Configuration saved successfully!',
+    projectConfigEmpty: 'Configuration file is empty',
+    projectConfigPlaceholder: 'Enter your project configuration here...',
+    filePath: 'File Path'
   },
   zh: {
     // App
@@ -180,6 +189,7 @@ const translations = {
     faviconPlaceholder: '图标地址（可选）',
     enableCustomConfig: '启用自定义配置',
     customConfigHint: '为此站点覆盖全局配置',
+    customConfigHintCodex: '添加额外的 TOML 配置（例如 MCP servers）',
     copyJson: '复制 JSON',
     jsonCopied: '已复制！',
     noCustomConfig: '无自定义配置',
@@ -227,7 +237,15 @@ const translations = {
     deleteVariable: '删除',
     baseConfigSaved: '✓ 基础配置已成功保存！',
     copiedToClipboard: '✓ 已复制到剪贴板！',
-    hidden: '*** 已隐藏 ***'
+    hidden: '*** 已隐藏 ***',
+
+    // Project Config Dialog
+    projectConfigTitle: '项目配置',
+    projectConfigDescription: '编辑项目级配置文件',
+    projectConfigSaved: '✓ 配置已成功保存！',
+    projectConfigEmpty: '配置文件为空',
+    projectConfigPlaceholder: '在此输入您的项目配置...',
+    filePath: '文件路径'
   }
 }
 

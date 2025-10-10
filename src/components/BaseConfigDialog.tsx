@@ -43,8 +43,13 @@ const BaseConfigDialog: React.FC<Props> = ({ mode, onClose }) => {
   const [displayValue, setDisplayValue] = useState('')
   const [jsonError, setJsonError] = useState('')
 
+  // Project config state
+  const [projectConfig, setProjectConfig] = useState('')
+  const [projectConfigLoading, setProjectConfigLoading] = useState(true)
+
   useEffect(() => {
     loadConfig()
+    loadProjectConfig()
   }, [mode])
 
   const loadConfig = async () => {
@@ -69,43 +74,59 @@ const BaseConfigDialog: React.FC<Props> = ({ mode, onClose }) => {
     }
   }
 
+  const loadProjectConfig = async () => {
+    setProjectConfigLoading(true)
+    try {
+      const content = await window.electronAPI.getProjectConfig(mode)
+      setProjectConfig(content)
+    } catch (error) {
+      console.error('Failed to load project config:', error)
+      setProjectConfig('')
+    } finally {
+      setProjectConfigLoading(false)
+    }
+  }
+
   const handleSave = async () => {
+    // Save base config
     if (isCodex) {
       if (!displayValue.trim()) {
         await window.electronAPI.updateBaseConfig(mode, DEFAULT_CODEX_BASE_CONFIG)
-        alert(t('baseConfigSaved'))
-        await loadConfig()
-        return
+      } else {
+        try {
+          const parsed = JSON.parse(displayValue)
+          setJsonError('')
+          await window.electronAPI.updateBaseConfig(mode, parsed)
+        } catch (error) {
+          setJsonError('')
+          await window.electronAPI.updateBaseConfig(mode, codexConfig!)
+        }
       }
-
-      try {
-        const parsed = JSON.parse(displayValue)
-        setJsonError('')
-        await window.electronAPI.updateBaseConfig(mode, parsed)
-        alert(t('baseConfigSaved'))
-        await loadConfig()
-      } catch (error) {
-        setJsonError(t('invalidJson'))
+    } else {
+      if (!displayValue.trim()) {
+        await window.electronAPI.updateBaseConfig(mode, DEFAULT_BASE_CONFIG)
+      } else {
+        try {
+          const parsedConfig = JSON.parse(jsonValue) as ClaudeBaseConfig
+          await window.electronAPI.updateBaseConfig(mode, parsedConfig)
+          setJsonError('')
+        } catch (error) {
+          setJsonError(t('invalidJson'))
+          return
+        }
       }
-      return
     }
 
-    if (!displayValue.trim()) {
-      await window.electronAPI.updateBaseConfig(mode, DEFAULT_BASE_CONFIG)
-      alert(t('baseConfigSaved'))
-      await loadConfig()
-      return
-    }
-
+    // Save project config
     try {
-      const parsedConfig = JSON.parse(jsonValue) as ClaudeBaseConfig
-      await window.electronAPI.updateBaseConfig(mode, parsedConfig)
-      setJsonError('')
-      alert(t('baseConfigSaved'))
-      await loadConfig()
+      await window.electronAPI.updateProjectConfig(mode, projectConfig)
     } catch (error) {
-      setJsonError(t('invalidJson'))
+      console.error('Failed to save project config:', error)
     }
+
+    alert(t('baseConfigSaved'))
+    await loadConfig()
+    await loadProjectConfig()
   }
 
   const copyToClipboard = () => {
@@ -131,65 +152,93 @@ const BaseConfigDialog: React.FC<Props> = ({ mode, onClose }) => {
         </div>
 
         <div className="dialog-content mini">
-          <div className="textarea-with-copy">
-            <textarea
-              className="json-textarea mini"
-              value={displayValue}
-              onChange={(e) => {
-                const newDisplay = e.target.value
-                setDisplayValue(newDisplay)
+          {/* Base Config Section */}
+          <div className="config-section">
+            <h3 className="section-title">{isCodex ? 'Codex' : 'Claude Code'} {t('baseConfig')}</h3>
+            <p className="config-hint">
+              {t('filePath')}: {isCodex ? '~/.codex/config.toml & ~/.codex/auth.json' : '~/.claude/settings.json'}
+            </p>
+            <div className="textarea-with-copy">
+              <textarea
+                className="json-textarea mini"
+                value={displayValue}
+                onChange={(e) => {
+                  const newDisplay = e.target.value
+                  setDisplayValue(newDisplay)
 
-                if (isCodex) {
-                  setJsonValue(newDisplay)
-                  setJsonError('')
+                  if (isCodex) {
+                    setJsonValue(newDisplay)
+                    setJsonError('')
+                    try {
+                      const parsed = JSON.parse(newDisplay)
+                      setCodexConfig(parsed)
+                    } catch {
+                      // ignore while typing
+                    }
+                    return
+                  }
+
                   try {
                     const parsed = JSON.parse(newDisplay)
-                    setCodexConfig(parsed)
-                  } catch {
-                    // ignore while typing
-                  }
-                  return
-                }
+                    const current = JSON.parse(JSON.stringify(claudeConfig))
 
-                try {
-                  const parsed = JSON.parse(newDisplay)
-                  const current = JSON.parse(JSON.stringify(claudeConfig))
-
-                  if (parsed.env) {
-                    Object.keys(parsed.env).forEach(key => {
-                      if (key === 'ANTHROPIC_AUTH_TOKEN' || key === 'ANTHROPIC_BASE_URL') {
-                        if (parsed.env[key] !== t('hidden')) {
+                    if (parsed.env) {
+                      Object.keys(parsed.env).forEach(key => {
+                        if (key === 'ANTHROPIC_AUTH_TOKEN' || key === 'ANTHROPIC_BASE_URL') {
+                          if (parsed.env[key] !== t('hidden')) {
+                            current.env[key] = parsed.env[key]
+                          }
+                        } else {
                           current.env[key] = parsed.env[key]
                         }
-                      } else {
-                        current.env[key] = parsed.env[key]
-                      }
-                    })
-                  }
+                      })
+                    }
 
-                  if (parsed.permissions) {
-                    current.permissions = parsed.permissions
-                  }
+                    if (parsed.permissions) {
+                      current.permissions = parsed.permissions
+                    }
 
-                  setClaudeConfig(current)
-                  setJsonValue(JSON.stringify(current, null, 2))
-                  setJsonError('')
-                } catch {
-                  // ignore while typing invalid JSON
-                }
-              }}
-              rows={12}
-            />
-            <button
-              type="button"
-              onClick={copyToClipboard}
-              className="btn-copy-embed"
-              title={t('copyJson')}
-            >
-              <CopyIcon size={14} />
-            </button>
+                    setClaudeConfig(current)
+                    setJsonValue(JSON.stringify(current, null, 2))
+                    setJsonError('')
+                  } catch {
+                    // ignore while typing invalid JSON
+                  }
+                }}
+                rows={10}
+              />
+              <button
+                type="button"
+                onClick={copyToClipboard}
+                className="btn-copy-embed"
+                title={t('copyJson')}
+              >
+                <CopyIcon size={14} />
+              </button>
+            </div>
+            {jsonError && <div className="error-message mini">{jsonError}</div>}
           </div>
-          {jsonError && <div className="error-message mini">{jsonError}</div>}
+
+          {/* Project Config Section */}
+          <div className="config-section">
+            <h3 className="section-title">
+              {isCodex ? 'AGENTS.md' : 'CLAUDE.md'} {t('projectConfigTitle')}
+            </h3>
+            <p className="config-hint">
+              {t('filePath')}: {isCodex ? '~/.codex/AGENTS.md' : '~/.claude/CLAUDE.md'}
+            </p>
+            {projectConfigLoading ? (
+              <div className="loading-text">{t('loading')}</div>
+            ) : (
+              <textarea
+                className="project-config-textarea"
+                value={projectConfig}
+                onChange={(e) => setProjectConfig(e.target.value)}
+                placeholder={t('projectConfigPlaceholder')}
+                rows={8}
+              />
+            )}
+          </div>
         </div>
 
         <div className="dialog-actions mini">

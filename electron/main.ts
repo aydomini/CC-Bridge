@@ -549,6 +549,77 @@ function setupIPC() {
     return settingsWriter.getSettingsPath(mode ?? configManager.getActiveMode())
   })
 
+  // Project config files (CLAUDE.md / AGENTS.md)
+  ipcMain.handle('get-project-config', async (_event, mode: AppMode) => {
+    const filePath = mode === 'codex'
+      ? path.join(app.getPath('home'), '.codex', 'AGENTS.md')
+      : path.join(app.getPath('home'), '.claude', 'CLAUDE.md')
+
+    try {
+      const fs = await import('fs/promises')
+      const content = await fs.readFile(filePath, 'utf-8')
+      return content
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        return '' // File doesn't exist, return empty string
+      }
+      throw error
+    }
+  })
+
+  ipcMain.handle('update-project-config', async (_event, mode: AppMode, content: string) => {
+    const filePath = mode === 'codex'
+      ? path.join(app.getPath('home'), '.codex', 'AGENTS.md')
+      : path.join(app.getPath('home'), '.claude', 'CLAUDE.md')
+
+    try {
+      const fs = await import('fs/promises')
+      const dir = path.dirname(filePath)
+
+      // Ensure directory exists
+      try {
+        await fs.access(dir)
+      } catch {
+        await fs.mkdir(dir, { recursive: true })
+      }
+
+      // Backup existing file before overwriting (if it exists)
+      try {
+        await fs.access(filePath)
+        const backupPath = `${filePath}.backup.${Date.now()}`
+        await fs.copyFile(filePath, backupPath)
+
+        // Auto cleanup old backups, keeping only the most recent 1 backup
+        const fileName = path.basename(filePath)
+        const files = await fs.readdir(dir)
+        const backups = files
+          .filter(f => f.startsWith(`${fileName}.backup.`))
+          .map(f => ({
+            name: f,
+            timestamp: parseInt(f.split('.backup.')[1] || '0'),
+            path: path.join(dir, f)
+          }))
+          .sort((a, b) => b.timestamp - a.timestamp)
+
+        // Delete old backups (keep only 1 most recent)
+        const toDelete = backups.slice(1)
+        for (const backup of toDelete) {
+          await fs.unlink(backup.path).catch(() => {})
+        }
+      } catch (error: any) {
+        // File doesn't exist yet, no need to backup
+        if (error.code !== 'ENOENT') {
+          console.warn('[ProjectConfig] Failed to backup:', error)
+        }
+      }
+
+      await fs.writeFile(filePath, content, 'utf-8')
+      return true
+    } catch (error) {
+      throw error
+    }
+  })
+
   // System preferences
   ipcMain.handle('get-system-preferences', () => {
     const systemLocale = app.getLocale() // e.g., 'zh-CN', 'en-US'

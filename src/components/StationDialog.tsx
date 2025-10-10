@@ -23,7 +23,6 @@ type StationFormState = {
   baseUrl: string
   authToken: string
   favicon: string
-  providerKey?: string
 }
 
 const KNOWN_SECOND_LEVEL_TLDS = new Set(['co', 'com', 'net', 'org', 'gov', 'edu'])
@@ -40,8 +39,8 @@ const toTitleCase = (value: string): string =>
 const normalizeJsonInput = (value: string): string =>
   removeNewlinesInsideStrings(
     value
-      .replace(/[“”]/g, '"')
-      .replace(/[‘’]/g, "'")
+      .replace(/[""]/g, '"')
+      .replace(/['']/g, "'")
       .replace(/，/g, ',')
       .replace(/：/g, ':')
       .replace(/\u00A0/g, ' ')
@@ -113,12 +112,6 @@ const extractCoreNameFromUrl = (url: string): { core: string; hostname: string }
   }
 }
 
-const deriveProviderKeyFromUrl = (url: string): string => {
-  const { core, hostname } = extractCoreNameFromUrl(url)
-  const base = core || hostname
-  return sanitizeProviderKey(base)
-}
-
 const formatTomlValue = (value: string | number | boolean): string => {
   if (typeof value === 'boolean') return value ? 'true' : 'false'
   if (typeof value === 'number') return Number.isFinite(value) ? `${value}` : `"${value}"`
@@ -154,15 +147,14 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
     name: '',
     baseUrl: '',
     authToken: '',
-    favicon: '',
-    providerKey: ''
+    favicon: ''
   })
 
   const [customConfig, setCustomConfig] = useState<Partial<ClaudeBaseConfig> | Partial<CodexBaseConfig> | undefined>(undefined)
   const [useCustomConfig, setUseCustomConfig] = useState(false)
   const [customJsonValue, setCustomJsonValue] = useState('')
   const [customJsonError, setCustomJsonError] = useState('')
-  const [providerKeyTouched, setProviderKeyTouched] = useState(false)
+  const [rawTomlValue, setRawTomlValue] = useState('') // For Codex raw TOML
 
   useEffect(() => {
     const loadBaseConfig = async () => {
@@ -182,29 +174,31 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
         name: station.name,
         baseUrl: station.baseUrl,
         authToken: station.authToken,
-        favicon: station.favicon || '',
-        providerKey: 'providerKey' in station ? station.providerKey || '' : ''
+        favicon: station.favicon || ''
       })
       setCustomConfig(station.customConfig)
-      setUseCustomConfig(!!station.customConfig)
+      setUseCustomConfig(!!station.customConfig || !!(station as CodexTransferStation).rawToml)
+
       if (station.customConfig) {
         setCustomJsonValue(JSON.stringify(station.customConfig, null, 2))
       }
-      const hasProviderKey = 'providerKey' in station && !!station.providerKey
-      setProviderKeyTouched(hasProviderKey)
+
+      // Load rawToml for Codex stations
+      if (isCodex && 'rawToml' in station) {
+        setRawTomlValue((station as CodexTransferStation).rawToml || '')
+      }
     } else {
       setFormData({
         name: '',
         baseUrl: '',
         authToken: '',
-        favicon: '',
-        providerKey: ''
+        favicon: ''
       })
       setCustomConfig(undefined)
       setUseCustomConfig(false)
       setCustomJsonValue('')
+      setRawTomlValue('')
       setJsonInput('')
-      setProviderKeyTouched(false)
     }
   }, [station, mode])
 
@@ -222,10 +216,6 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
           if (suggestedName) {
             setFormData(prev => ({ ...prev, name: suggestedName }))
           }
-        }
-
-        if (isCodex && !providerKeyTouched) {
-          setFormData(prev => ({ ...prev, providerKey: deriveProviderKeyFromUrl(url) }))
         }
       } catch {
         // ignore invalid URL
@@ -329,13 +319,17 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
     e.preventDefault()
 
     if (isCodex) {
+      // Auto-generate providerKey from station name
+      const providerKey = sanitizeProviderKey(formData.name)
+
       const payload: Omit<CodexTransferStation, 'id' | 'createdAt'> = {
         name: formData.name,
         baseUrl: formData.baseUrl,
         authToken: formData.authToken,
         favicon: formData.favicon || undefined,
-        providerKey: formData.providerKey || undefined,
-        customConfig: useCustomConfig ? (customConfig as Partial<CodexBaseConfig> | undefined) : undefined
+        providerKey: providerKey,
+        customConfig: useCustomConfig ? (customConfig as Partial<CodexBaseConfig> | undefined) : undefined,
+        rawToml: useCustomConfig && rawTomlValue.trim() ? rawTomlValue.trim() : undefined
       }
       onSave(payload as Omit<TransferStation, 'id' | 'createdAt'>)
     } else {
@@ -351,6 +345,14 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
   }
 
   const handleSaveCustomConfig = () => {
+    // For Codex mode, we don't validate as JSON (it's TOML)
+    if (isCodex) {
+      // No validation needed for raw TOML
+      setCustomJsonError('')
+      return
+    }
+
+    // For Claude mode, validate JSON
     try {
       const config = JSON.parse(customJsonValue)
       setCustomConfig(config)
@@ -398,10 +400,10 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
   const buildCodexPreview = () => {
     if (!baseConfig) return ''
     const codexConfig = mergeCodexConfig(baseConfig as CodexBaseConfig, useCustomConfig ? (customConfig as Partial<CodexBaseConfig>) : undefined)
-    const coreFromUrl = extractCoreNameFromUrl(formData.baseUrl)
-    const derivedKey = sanitizeProviderKey(coreFromUrl.core || formData.name)
-    const providerKey = sanitizeProviderKey(formData.providerKey || derivedKey)
-    const providerName = formData.name || toTitleCase(coreFromUrl.core || providerKey)
+
+    // Auto-generate providerKey from station name
+    const providerKey = sanitizeProviderKey(formData.name)
+    const providerName = formData.name || 'Provider'
     const modelProvider = (codexConfig.modelProvider && codexConfig.modelProvider.trim().length > 0
       ? codexConfig.modelProvider
       : providerKey) ?? providerKey
@@ -425,6 +427,13 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
     lines.push(`base_url = "${formData.baseUrl}"`)
     lines.push(`wire_api = "${codexConfig.wireApi}"`)
     lines.push(`requires_openai_auth = ${codexConfig.requiresOpenaiAuth ? 'true' : 'false'}`)
+
+    // Append raw TOML if provided
+    if (useCustomConfig && rawTomlValue.trim()) {
+      lines.push('')
+      lines.push('# --- Additional Configuration ---')
+      lines.push(rawTomlValue.trim())
+    }
 
     return lines.join('\n')
   }
@@ -483,21 +492,6 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
                     required
                   />
                 </div>
-
-                {isCodex && (
-                  <div className="form-group mini">
-                    <label>{t('providerKey')}</label>
-                    <input
-                      type="text"
-                      value={formData.providerKey || ''}
-                      onChange={(e) => {
-                        setProviderKeyTouched(true)
-                        setFormData({ ...formData, providerKey: e.target.value })
-                      }}
-                      placeholder={t('providerKeyPlaceholder')}
-                    />
-                  </div>
-                )}
 
                 <div className="form-group mini">
                   <label>{t('stationUrl')}</label>
@@ -569,27 +563,49 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
 
                 {useCustomConfig && (
                   <div className="custom-config-content mini">
-                    <div className="textarea-with-copy">
-                      <textarea
-                        className="json-textarea mini"
-                        value={customJsonValue}
-                        onChange={(e) => {
-                          setCustomJsonValue(e.target.value)
-                          setCustomJsonError('')
-                        }}
-                        onBlur={handleSaveCustomConfig}
-                        rows={isCodex ? 6 : 5}
-                        placeholder={t('customConfigHint')}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => copyToClipboard(customJsonValue)}
-                        className="btn-copy-embed"
-                        title={t('copyJson')}
-                      >
-                        <CopyIcon size={14} />
-                      </button>
-                    </div>
+                    {isCodex ? (
+                      // Codex mode: Raw TOML input
+                      <div className="textarea-with-copy">
+                        <textarea
+                          className="json-textarea mini"
+                          value={rawTomlValue}
+                          onChange={(e) => setRawTomlValue(e.target.value)}
+                          rows={8}
+                          placeholder={t('customConfigHintCodex')}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(rawTomlValue)}
+                          className="btn-copy-embed"
+                          title={t('copyJson')}
+                        >
+                          <CopyIcon size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      // Claude mode: JSON input
+                      <div className="textarea-with-copy">
+                        <textarea
+                          className="json-textarea mini"
+                          value={customJsonValue}
+                          onChange={(e) => {
+                            setCustomJsonValue(e.target.value)
+                            setCustomJsonError('')
+                          }}
+                          onBlur={handleSaveCustomConfig}
+                          rows={5}
+                          placeholder={t('customConfigHint')}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(customJsonValue)}
+                          className="btn-copy-embed"
+                          title={t('copyJson')}
+                        >
+                          <CopyIcon size={14} />
+                        </button>
+                      </div>
+                    )}
                     {customJsonError && <div className="error-message mini">{customJsonError}</div>}
                   </div>
                 )}

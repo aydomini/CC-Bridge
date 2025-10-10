@@ -252,7 +252,7 @@ function App() {
         <div className="header-left">
           <div className="header-logo">
             <AppIcon size={32} />
-            <span className="app-version">v1.2.0</span>
+            <span className="app-version">v1.2.1</span>
           </div>
           <div className="header-title">
             <div className="title-row">

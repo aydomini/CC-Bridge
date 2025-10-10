@@ -22,15 +22,33 @@
 
 CC Bridge 是一款 **免费开源** 的 Electron + React 桌面应用，专为需要频繁切换多个中转站的开发者打造。现在同时支持 **Claude Code** 与 **OpenAI Codex** 两种模式，并提供统一的操作体验：
 
-- 🔄 一键切换站点，自动备份历史配置  
-- 🔐 AES-256-CBC 设备级加密令牌  
-- ⚙️ 全局配置 + 站点定制 + 可视化预览  
-- 💰 余额追踪与多货币支持  
-- 🌍 内置中英双语，界面随时切换  
+- 🔄 一键切换站点，自动备份历史配置
+- 🔐 AES-256-CBC 设备级加密令牌
+- ⚙️ 全局配置 + 站点定制 + 可视化预览
+- 💰 余额追踪与多货币支持
+- 🌍 内置中英双语，界面随时切换
 - 🖥️ 菜单栏托盘列出双模式站点，随时切换
 
-> **最新版本** 请见 [GitHub Releases](https://github.com/aydomini/CC-Bridge/releases)  
+> **最新版本** 请见 [GitHub Releases](https://github.com/aydomini/CC-Bridge/releases)
 > **当前构建**：macOS (Apple Silicon)。Windows / Linux / Intel macOS 仍在规划中，欢迎贡献。
+
+## 📸 界面预览
+
+<div align="center">
+
+### 主界面（浅色模式）
+<img src="screenshots/main-interface-light.png" alt="主界面浅色模式" width="700">
+
+### 主界面（深色模式）
+<img src="screenshots/main-interface-dark.png" alt="主界面深色模式" width="700">
+
+### 添加站点对话框
+<img src="screenshots/add-station-dialog.png" alt="添加站点" width="700">
+
+### 快速导入（JSON）
+<img src="screenshots/quick-import-dialog.png" alt="快速导入" width="700">
+
+</div>
 
 ## 📦 安装说明
 
@@ -120,10 +138,16 @@ CC-Bridge/
 
 ## 🤝 参与项目
 
-1. Fork & 基于 `main` 分支创建功能分支。  
-2. 注意同时支持 Claude / Codex 场景，文档需同步更新中英文。  
-3. 提交 PR 前务必执行 `npm run build` 并附上测试说明或截图。  
+1. Fork & 基于 `main` 分支创建功能分支。
+2. 注意同时支持 Claude / Codex 场景，文档需同步更新中英文。
+3. 提交 PR 前务必执行 `npm run build` 并附上测试说明或截图。
 4. Bug 与需求建议：请至 [GitHub Issues](https://github.com/aydomini/CC-Bridge/issues)。
+
+---
+
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=aydomini/CC-Bridge&type=Date)](https://star-history.com/#aydomini/CC-Bridge&Date)
 
 ---
 
