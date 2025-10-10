@@ -20,128 +20,277 @@
 
 ## ✨ 项目简介
 
-CC Bridge 是一款 **免费开源** 的 Electron + React 桌面应用，专为需要频繁切换多个中转站的开发者打造。现在同时支持 **Claude Code** 与 **OpenAI Codex** 两种模式，并提供统一的操作体验：
+CC Bridge 是一款 **免费开源** 的 Electron + React 桌面应用，专为需要频繁切换多个 AI 中转站的开发者打造。现已支持 **Claude Code** 与 **OpenAI Codex** 双模式管理，提供统一的配置体验。
 
-- 🔄 一键切换站点，自动备份历史配置
-- 🔐 AES-256-CBC 设备级加密令牌
-- ⚙️ 全局配置 + 站点定制 + 可视化预览
-- 💰 余额追踪与多货币支持
-- 🌍 内置中英双语，界面随时切换
-- 🖥️ 菜单栏托盘列出双模式站点，随时切换
+### 核心功能
 
-> **最新版本** 请见 [GitHub Releases](https://github.com/aydomini/CC-Bridge/releases)
-> **当前构建**：macOS (Apple Silicon)。Windows / Linux / Intel macOS 仍在规划中，欢迎贡献。
+- 🔄 **一键切换站点**：支持多个中转站配置，点击应用即可切换，自动备份原配置
+- 🔐 **军用级加密**：AES-256-CBC 加密存储 API 令牌，设备绑定密钥，防止泄露
+- ⚙️ **灵活配置系统**：全局默认配置 + 站点自定义配置 + 项目级配置文件，满足各种使用场景
+- 📝 **项目配置编辑**：直接编辑 `CLAUDE.md` / `AGENTS.md`，统一管理项目级指令与记忆
+- 💰 **余额追踪**：为每个站点设置余额与货币，实时掌握使用情况
+- 🌍 **中英双语**：界面支持中英文切换，适配深色/浅色主题
+- 🖥️ **菜单栏托盘**：常驻托盘，快速切换站点与模式，无需打开主窗口
+- 📦 **快速导入**：Claude 模式支持 JSON 快速导入，自动修复格式问题（中文标点、缺失逗号、智能引号等）
+
+> **最新版本**：v1.2.1 - [下载地址](https://github.com/aydomini/CC-Bridge/releases)
+> **当前平台**：macOS (Apple Silicon)。Windows / Linux / Intel Mac 正在规划中，欢迎贡献代码。
+
+---
 
 ## 📸 界面预览
 
-<div align="center">
+<table>
+  <tr>
+    <td width="50%">
+      <img src="screenshots/main-interface-light.png" alt="主界面（浅色）" />
+      <p align="center"><b>主界面（浅色模式）</b></p>
+    </td>
+    <td width="50%">
+      <img src="screenshots/main-interface-dark.png" alt="主界面（深色）" />
+      <p align="center"><b>主界面（深色模式）</b></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="screenshots/add-station-dialog.png" alt="添加站点" />
+      <p align="center"><b>添加站点对话框</b></p>
+    </td>
+    <td width="50%">
+      <img src="screenshots/quick-import-dialog.png" alt="快速导入" />
+      <p align="center"><b>快速导入（JSON）</b></p>
+    </td>
+  </tr>
+</table>
 
-### 主界面（浅色模式）
-<img src="screenshots/main-interface-light.png" alt="主界面浅色模式" width="700">
-
-### 主界面（深色模式）
-<img src="screenshots/main-interface-dark.png" alt="主界面深色模式" width="700">
-
-### 添加站点对话框
-<img src="screenshots/add-station-dialog.png" alt="添加站点" width="700">
-
-### 快速导入（JSON）
-<img src="screenshots/quick-import-dialog.png" alt="快速导入" width="700">
-
-</div>
+---
 
 ## 📦 安装说明
 
-1. 从 [Releases](https://github.com/aydomini/CC-Bridge/releases) 下载最新版 DMG。  
-2. 打开 DMG，将 **CC Bridge** 拖入「应用程序」。  
-3. 第一次启动需要通过 Gatekeeper 验证：
-   - 右键点击 → *打开* → 再点 *打开*，或  
-   - 系统设置 ▸ 隐私与安全性 ▸ *仍要打开*，或  
-   - `xattr -cr "/Applications/CC Bridge.app"`
+### macOS (Apple Silicon)
 
-当前版本使用临时签名（Adhoc Signing），未购买 Apple 开发者证书；源码全部开放，可自行审计。
+1. 从 [Releases](https://github.com/aydomini/CC-Bridge/releases) 下载最新版 `CC Bridge-x.x.x-arm64.dmg`
+2. 打开 DMG，将 **CC Bridge** 拖入「应用程序」文件夹
+3. 首次启动需绕过 Gatekeeper 验证（应用使用临时签名）：
+   - **方法 1**：右键点击应用 → 选择「打开」→ 再次点击「打开」
+   - **方法 2**：系统设置 → 隐私与安全性 → 找到 CC Bridge → 点击「仍要打开」
+   - **方法 3**：在终端执行：`xattr -cr "/Applications/CC Bridge.app"`
 
-## 🚀 快速上手
+> **说明**：应用未购买 Apple 开发者证书（$99/年），使用 Adhoc Signing。所有源码开放，可自行审计安全性。
 
-### 1. 添加站点
+---
 
-| 字段 | Claude 模式 | Codex 模式 |
-|------|-------------|------------|
-| 名称 | 站点名称（如“生产站”、“备用站”） | 同上 |
-| Provider Key | 不需要 | 可选标识，默认根据域名生成 |
-| URL | Claude 中转站地址 | Codex 中转站地址 |
-| Token | `ANTHROPIC_AUTH_TOKEN` | `OPENAI_API_KEY` |
-| 自定义配置 | JSON 覆盖全局设置 | 同上 |
+## 🚀 使用指南
 
-- **快速导入**：Claude 模式支持粘贴 JSON，程序会自动修正中文标点、缺少逗号、智能引号、换行等问题。  
-- Codex 目前以表单方式录入（TOML 将在未来升级）。
+### 1️⃣ 选择模式
 
-### 2. 应用配置
+应用支持两种模式，可随时切换：
 
-- 选择目标站点 ➜ 点击 **应用**。  
-- Claude 写入 `~/.claude/settings.json`；Codex 写入 `~/.codex/config.toml` 与 `auth.json`。  
-- 应用前自动生成时间戳备份；如检测到 Claude Code 正在运行，会提醒手动重启。
+- **Claude Code 模式**：管理 Claude Code CLI 的中转站配置（`~/.claude/settings.json`）
+- **Codex 模式**：管理 OpenAI Codex CLI 的中转站配置（`~/.codex/config.toml` + `auth.json`）
 
-### 3. 菜单栏托盘
+在主界面顶部可切换当前模式。
 
-- 托盘菜单将 Claude / Codex 站点分组展示，可直接切换并同步到应用界面。  
-- 如检测到系统设置与应用站点不一致，会在对应组别显示 ⚠️ 提醒。
+### 2️⃣ 添加站点
 
-## ⚙️ 功能亮点
+点击右上角 **「+」** 按钮，填写站点信息：
 
-- **双模式全局配置**  
-  在「全局配置」中可分别维护 Claude / Codex 的默认值；清空文本并保存会自动恢复到内置安全配置。
+| 字段 | Claude 模式 | Codex 模式 | 说明 |
+|------|-------------|------------|------|
+| **站点名称** | 必填 | 必填 | 为站点起个好记的名字（如「生产站」「测试站」） |
+| **Provider Key** | 不适用 | 可选 | 提供商标识，默认根据域名生成 |
+| **Base URL** | 必填 | 必填 | 中转站的 API 端点地址（如 `https://api.example.com`） |
+| **Auth Token** | 必填 | 必填 | Claude 填 `ANTHROPIC_AUTH_TOKEN`，Codex 填 `OPENAI_API_KEY` |
+| **自定义配置** | 可选 | 可选 | JSON 格式的配置覆盖，会与全局配置合并 |
+| **余额** | 可选 | 可选 | 设置余额与货币，方便追踪消费 |
 
-- **令牌安全策略**  
-  使用设备路径派生的 AES-256-CBC 密钥，加密存储站点令牌，且支持硬件变更后的自动迁移。
+#### 快速导入（仅 Claude 模式）
 
-- **预览体验优化**  
-  站点列表、配置预览、标题区均针对中英双语做了布局稳定优化，避免切换语言时高度跳动。
+点击「快速导入」按钮，直接粘贴 JSON 配置：
 
-- **UI 精简调整**  
-  顶部只保留主题切换、语言切换、全局配置、添加站点四个按钮，托盘承担隐藏/切换职责，界面更清爽。
+```json
+{
+  "name": "生产站",
+  "baseUrl": "https://api.example.com",
+  "authToken": "sk-ant-xxxxx",
+  "balance": 100,
+  "currency": "USD"
+}
+```
+
+程序会自动修复常见格式问题：
+- ✅ 中文标点（，。""）→ 英文标点
+- ✅ 缺失逗号自动补全
+- ✅ 智能引号（""）→ 标准引号
+- ✅ 换行符统一处理
+
+### 3️⃣ 应用配置
+
+选中目标站点，点击 **「应用」** 按钮：
+
+- **Claude 模式**：配置写入 `~/.claude/settings.json`
+- **Codex 模式**：配置写入 `~/.codex/config.toml` 和 `~/.codex/auth.json`
+
+应用前会自动创建带时间戳的备份文件（如 `settings.json.backup.1234567890`）。
+
+> ⚠️ **重要提示**：如果 Claude Code CLI 正在运行，应用配置后需手动重启 CLI 以生效。
+
+### 4️⃣ 全局配置
+
+点击顶部 **「⚙️ 全局配置」** 按钮，可编辑：
+
+#### 基础配置（Base Config）
+
+- **Claude 模式**：编辑默认的环境变量（`env`）和权限配置（`permissions`）
+- **Codex 模式**：编辑默认的模型配置（`model`、`model_provider` 等）
+
+文件路径提示：
+- Claude：`~/.claude/settings.json`
+- Codex：`~/.codex/config.toml` + `~/.codex/auth.json`
+
+#### 项目配置（Project Config）🆕
+
+v1.2.1 新增功能！直接在应用内编辑项目级配置文件：
+
+- **Claude 模式**：编辑 `~/.claude/CLAUDE.md`
+- **Codex 模式**：编辑 `~/.codex/AGENTS.md`
+
+这些文件用于存储项目级的系统提示词、记忆库、工作流规则等，会在所有会话中生效。
+
+保存时自动创建备份，保留最近 1 个版本。
+
+### 5️⃣ 菜单栏托盘
+
+应用常驻菜单栏，提供快速操作：
+
+- **模式分组**：Claude / Codex 站点分别列出
+- **一键切换**：点击站点名称即可应用配置，无需打开主窗口
+- **外部警告**：如果检测到配置文件被外部修改（非本应用管理），会显示 ⚠️ 提示
+- **模式指示**：当前激活的模式会标注「（当前模式）」
+
+---
+
+## ⚙️ 核心特性详解
+
+### 🔐 安全加密
+
+- **加密算法**：AES-256-CBC（军用级加密标准）
+- **密钥生成**：基于设备特定路径派生，绑定本机硬件
+- **自动迁移**：检测到设备路径变化时，自动迁移加密密钥
+- **零明文存储**：所有 API 令牌加密后存储，配置文件中无法直接读取
+
+### 📝 配置系统架构
+
+CC Bridge 采用三层配置系统：
+
+1. **全局基础配置（Base Config）**
+   - 所有站点的默认配置
+   - Claude / Codex 模式各自独立维护
+   - 可在「全局配置」对话框中编辑
+
+2. **站点自定义配置（Custom Config）**
+   - 针对单个站点的配置覆盖
+   - 以 JSON 格式存储，与全局配置合并
+   - 支持覆盖环境变量、权限、模型参数等
+
+3. **项目级配置文件（Project Config）** 🆕
+   - `CLAUDE.md` / `AGENTS.md` 文件
+   - 存储项目级的系统提示词、记忆库、规则
+   - 跨会话持久化，所有站点共享
+
+### 🎨 UI/UX 优化
+
+- **模式感知界面**：根据 Claude / Codex 模式动态调整表单字段与提示文本
+- **实时预览**：站点列表支持配置预览，可折叠展开查看详情
+- **文件路径提示**：所有配置编辑框上方显示对应的文件路径
+- **布局稳定性**：中英文切换时，界面高度保持稳定，无抖动
+- **响应式设计**：适配深色/浅色主题，自动跟随系统设置
+
+### 🔄 智能备份
+
+- **自动备份**：应用配置前自动创建时间戳备份
+- **备份清理**：自动保留最近 1 个备份，删除过期备份
+- **手动恢复**：备份文件位于配置文件同目录，可手动恢复
+
+---
 
 ## 🛠️ 本地开发
 
-环境要求：**Node.js 16+**、**npm**、**git**
+### 环境要求
+
+- **Node.js** 16 或更高版本
+- **npm** 7 或更高版本
+- **git**
+
+### 快速开始
 
 ```bash
+# 克隆仓库
 git clone https://github.com/aydomini/CC-Bridge.git
 cd CC-Bridge
+
+# 安装依赖
 npm install
 
 # 开发模式（带热重载）
 npm run dev
 
-# 构建 React / TypeScript
+# 构建生产版本
 npm run build
 
-# 打包 Electron
+# 打包应用
 npm run package
 ```
 
-目录结构简要：
+### 项目结构
 
 ```
 CC-Bridge/
-├── electron/          # 主进程：窗口、托盘、IPC
-│   ├── main.ts        # 应用入口
-│   ├── preload.ts     # 暴露 electronAPI
-│   └── services/      # 配置存储、加密、文件写入
-├── src/               # 渲染进程：React + TS
-│   ├── App.tsx        # 核心页面逻辑
-│   ├── components/    # UI 组件（弹窗、列表、图标）
-│   ├── contexts/      # 主题 / 语言上下文
-│   └── types/         # 共享类型定义
-└── build/             # 静态资源、签名配置
+├── electron/                # Electron 主进程
+│   ├── main.ts              # 应用入口、窗口管理、托盘菜单
+│   ├── preload.ts           # IPC 安全桥接
+│   └── services/            # 核心服务
+│       ├── configManager.ts # 站点与配置管理
+│       ├── settingsWriter.ts# 配置文件写入
+│       └── encryption.ts    # AES-256 加密服务
+├── src/                     # React 渲染进程
+│   ├── App.tsx              # 主界面逻辑
+│   ├── components/          # UI 组件
+│   │   ├── StationList.tsx  # 站点列表
+│   │   ├── StationDialog.tsx# 添加/编辑站点
+│   │   ├── BaseConfigDialog.tsx # 全局配置 + 项目配置
+│   │   └── ...
+│   ├── contexts/            # React Context
+│   │   ├── ThemeContext.tsx # 主题管理
+│   │   └── LanguageContext.tsx # 多语言管理
+│   └── types/               # TypeScript 类型定义
+└── build/                   # 静态资源（图标、签名配置）
 ```
 
-## 🤝 参与项目
+### 技术栈
 
-1. Fork & 基于 `main` 分支创建功能分支。
-2. 注意同时支持 Claude / Codex 场景，文档需同步更新中英文。
-3. 提交 PR 前务必执行 `npm run build` 并附上测试说明或截图。
-4. Bug 与需求建议：请至 [GitHub Issues](https://github.com/aydomini/CC-Bridge/issues)。
+- **前端**：React 18 + TypeScript + Vite
+- **后端**：Electron + Node.js
+- **加密**：crypto (AES-256-CBC)
+- **存储**：electron-store (JSON)
+- **构建**：electron-builder
+
+---
+
+## 🤝 参与贡献
+
+欢迎为 CC Bridge 贡献代码！请遵循以下流程：
+
+1. **Fork** 本仓库并基于 `main` 分支创建功能分支
+2. **开发**时注意同时支持 Claude / Codex 模式
+3. **提交** PR 前执行 `npm run build` 确保构建成功
+4. **同步更新**中英文 README 文档
+5. **附上测试说明**或界面截图
+
+### 报告问题 & 功能建议
+
+- 提交 Issue：[GitHub Issues](https://github.com/aydomini/CC-Bridge/issues)
+- 功能讨论：[GitHub Discussions](https://github.com/aydomini/CC-Bridge/discussions)
 
 ---
 
@@ -151,4 +300,16 @@ CC-Bridge/
 
 ---
 
-爱折腾，就来一起构建更好用的 CC Bridge 吧！🌟 如果项目帮到了你，欢迎点个 Star 支持。
+## 📄 开源协议
+
+本项目采用 [MIT License](LICENSE) 开源协议 - 自由使用、修改、分发。
+
+---
+
+<div align="center">
+
+**用 ❤️ 为 Claude Code 与 Codex 社区打造**
+
+如果 CC Bridge 帮到了你，欢迎点个 ⭐ Star 支持！
+
+</div>
