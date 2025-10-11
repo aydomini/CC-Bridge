@@ -155,6 +155,7 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
   const [customJsonValue, setCustomJsonValue] = useState('')
   const [customJsonError, setCustomJsonError] = useState('')
   const [rawTomlValue, setRawTomlValue] = useState('') // For Codex raw TOML
+  const [codexConfigTab, setCodexConfigTab] = useState<'standard' | 'advanced'>('standard') // Codex config tab
 
   useEffect(() => {
     const loadBaseConfig = async () => {
@@ -351,14 +352,7 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
   }
 
   const handleSaveCustomConfig = () => {
-    // For Codex mode, we don't validate as JSON (it's TOML)
-    if (isCodex) {
-      // No validation needed for raw TOML
-      setCustomJsonError('')
-      return
-    }
-
-    // For Claude mode, validate JSON
+    // Validate JSON for both modes (standard config tab)
     try {
       const config = JSON.parse(customJsonValue)
       setCustomConfig(config)
@@ -405,7 +399,12 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
 
   const buildCodexPreview = () => {
     if (!baseConfig) return ''
-    const codexConfig = mergeCodexConfig(baseConfig as CodexBaseConfig, useCustomConfig ? (customConfig as Partial<CodexBaseConfig>) : undefined)
+
+    // Merge base config with custom config (from standard config tab)
+    const codexConfig = mergeCodexConfig(
+      baseConfig as CodexBaseConfig,
+      useCustomConfig ? (customConfig as Partial<CodexBaseConfig>) : undefined
+    )
 
     // Auto-generate providerKey from station name
     const providerKey = sanitizeProviderKey(formData.name)
@@ -415,6 +414,8 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
       : providerKey) ?? providerKey
 
     const lines: string[] = []
+
+    // Top-level config fields (merged from base + custom)
     lines.push(`model_provider = "${modelProvider}"`)
     lines.push(`model = "${codexConfig.model}"`)
     if (codexConfig.modelReasoningEffort) {
@@ -422,11 +423,13 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
     }
     lines.push(`disable_response_storage = ${codexConfig.disableResponseStorage ? 'true' : 'false'}`)
 
+    // Additional settings from merged config
     Object.entries(codexConfig.additionalSettings ?? {}).forEach(([key, value]) => {
       if (!key) return
       lines.push(`${key} = ${formatTomlValue(value)}`)
     })
 
+    // Provider section
     lines.push('')
     lines.push(`[model_providers.${providerKey}]`)
     lines.push(`name = "${providerName}"`)
@@ -434,10 +437,10 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
     lines.push(`wire_api = "${codexConfig.wireApi}"`)
     lines.push(`requires_openai_auth = ${codexConfig.requiresOpenaiAuth ? 'true' : 'false'}`)
 
-    // Append raw TOML if provided
+    // Append raw TOML from advanced tab if provided
     if (useCustomConfig && rawTomlValue.trim()) {
       lines.push('')
-      lines.push('# --- Additional Configuration ---')
+      lines.push('# --- Advanced Configuration ---')
       lines.push(rawTomlValue.trim())
     }
 
@@ -551,16 +554,17 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
                       const checked = e.target.checked
                       setUseCustomConfig(checked)
                       if (checked) {
-                        if (!customJsonValue) {
-                          const defaultConfig = baseConfig
-                            ? JSON.stringify(baseConfig, null, 2)
-                            : '{}'
+                        if (!customJsonValue && !isCodex) {
+                          // For Claude: Initialize with full base config
+                          // For Codex: Leave empty, user can add fields as needed
+                          const defaultConfig = baseConfig ? JSON.stringify(baseConfig, null, 2) : '{}'
                           setCustomJsonValue(defaultConfig)
                         }
                       } else {
                         setCustomConfig(undefined)
                         setCustomJsonValue('')
                         setCustomJsonError('')
+                        setRawTomlValue('')
                       }
                     }}
                   />
@@ -570,24 +574,70 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
                 {useCustomConfig && (
                   <div className="custom-config-content mini">
                     {isCodex ? (
-                      // Codex mode: Raw TOML input
-                      <div className="textarea-with-copy">
-                        <textarea
-                          className="json-textarea mini"
-                          value={rawTomlValue}
-                          onChange={(e) => setRawTomlValue(e.target.value)}
-                          rows={8}
-                          placeholder={t('customConfigHintCodex')}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard(rawTomlValue)}
-                          className="btn-copy-embed"
-                          title={t('copyJson')}
-                        >
-                          <CopyIcon size={14} />
-                        </button>
-                      </div>
+                      // Codex mode: Dual-tab editor
+                      <>
+                        <div className="mode-toggle mini" style={{ marginTop: '8px' }}>
+                          <button
+                            type="button"
+                            className={`mode-btn ${codexConfigTab === 'standard' ? 'active' : ''}`}
+                            onClick={() => setCodexConfigTab('standard')}
+                          >
+                            {t('standardConfigTab')}
+                          </button>
+                          <button
+                            type="button"
+                            className={`mode-btn ${codexConfigTab === 'advanced' ? 'active' : ''}`}
+                            onClick={() => setCodexConfigTab('advanced')}
+                          >
+                            {t('advancedTomlTab')}
+                          </button>
+                        </div>
+
+                        {codexConfigTab === 'standard' ? (
+                          // Standard config: JSON editor for structured fields
+                          <div className="textarea-with-copy" style={{ marginTop: '8px' }}>
+                            <textarea
+                              className="json-textarea mini"
+                              value={customJsonValue}
+                              onChange={(e) => {
+                                setCustomJsonValue(e.target.value)
+                                setCustomJsonError('')
+                              }}
+                              onBlur={handleSaveCustomConfig}
+                              rows={8}
+                              placeholder={t('standardConfigHint')}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(customJsonValue)}
+                              className="btn-copy-embed"
+                              title={t('copyJson')}
+                            >
+                              <CopyIcon size={14} />
+                            </button>
+                          </div>
+                        ) : (
+                          // Advanced config: Raw TOML editor
+                          <div className="textarea-with-copy" style={{ marginTop: '8px' }}>
+                            <textarea
+                              className="json-textarea mini"
+                              value={rawTomlValue}
+                              onChange={(e) => setRawTomlValue(e.target.value)}
+                              rows={8}
+                              placeholder={t('advancedTomlHint')}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(rawTomlValue)}
+                              className="btn-copy-embed"
+                              title={t('copyJson')}
+                            >
+                              <CopyIcon size={14} />
+                            </button>
+                          </div>
+                        )}
+                        {customJsonError && <div className="error-message mini">{customJsonError}</div>}
+                      </>
                     ) : (
                       // Claude mode: JSON input
                       <div className="textarea-with-copy">
@@ -612,7 +662,7 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
                         </button>
                       </div>
                     )}
-                    {customJsonError && <div className="error-message mini">{customJsonError}</div>}
+                    {!isCodex && customJsonError && <div className="error-message mini">{customJsonError}</div>}
                   </div>
                 )}
               </div>

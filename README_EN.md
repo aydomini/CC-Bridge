@@ -33,7 +33,7 @@ CC Bridge is a **free & open-source** Electron + React desktop application desig
 - 🖥️ **Menu Bar Tray**: Persistent tray icon for quick station/mode switching without opening the main window
 - 📦 **Quick Import**: Claude mode supports JSON quick import with auto-fix for format issues (Chinese punctuation, missing commas, smart quotes, etc.)
 
-> **Latest Version**: v1.2.3 - [Download](https://github.com/aydomini/CC-Bridge/releases)
+> **Latest Version**: v1.2.4 - [Download](https://github.com/aydomini/CC-Bridge/releases)
 > **Current Platform**: macOS (Apple Silicon). Windows / Linux / Intel Mac are planned—PRs welcome!
 
 ---
@@ -62,6 +62,39 @@ CC Bridge is a **free & open-source** Electron + React desktop application desig
     </td>
   </tr>
 </table>
+
+---
+
+## 🎉 v1.2.4 Update
+
+### Codex Mode Configuration Editor Enhancement
+
+- ✨ **Dual-Tab Design**: Custom configuration now split into two tabs
+  - **Override (JSON)**: Override global base config fields in JSON format (e.g., `model`, `modelReasoningEffort`)
+  - **Additional (TOML)**: Add extra TOML configuration sections (e.g., `[[mcp_servers]]`)
+- 🎨 **Elegant Placeholder Text**: Input boxes display formatted example code for clarity
+- 📝 **Clear Separation of Concerns**:
+  - Override tab: Modify base configuration fields
+  - Additional tab: Add custom TOML sections
+- 🔍 **Live Preview**: Both configurations are automatically merged and displayed in the preview area
+
+**Usage Examples**:
+
+Override (JSON):
+```json
+{
+  "model": "gpt-4",
+  "modelReasoningEffort": "medium"
+}
+```
+
+Additional (TOML):
+```toml
+[[mcp_servers]]
+name = "filesystem"
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-filesystem"]
+```
 
 ---
 
@@ -117,6 +150,8 @@ Click the "Quick Import" button and paste JSON configuration:
   "currency": "USD"
 }
 ```
+
+**✨ v1.2.4 Update**: Codex mode now supports dual-tab configuration editor!
 
 **✨ New in v1.2.3**: Quick import now supports top-level custom fields! You can import configurations like this:
 
