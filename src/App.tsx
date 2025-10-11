@@ -189,16 +189,19 @@ function App() {
     if (result.success) {
       const isRunning = await window.electronAPI.isTargetRunning(modeRef.current)
       const stationName = station.name || 'Station'
+      const targetName = modeRef.current === 'claude' ? 'Claude Code' : 'Codex'
 
-      if (modeRef.current === 'claude' && isRunning) {
+      // 配置已修改,始终提示需要重启才能生效
+      // 如果检测到进程正在运行,额外强调需要重启
+      if (isRunning) {
         window.electronAPI.showNotification(
           t('applySuccess'),
-          `${stationName} - ${t('needRestartCC')}`
+          `${stationName}\n⚠️ ${targetName} 正在运行,请重启以使配置生效`
         )
       } else {
         window.electronAPI.showNotification(
           t('applySuccess'),
-          stationName
+          `${stationName}\n💡 下次启动 ${targetName} 时配置将生效`
         )
       }
 
@@ -252,7 +255,7 @@ function App() {
         <div className="header-left">
           <div className="header-logo">
             <AppIcon size={32} />
-            <span className="app-version">v1.2.3</span>
+            <span className="app-version">v1.2.4</span>
           </div>
           <div className="header-title">
             <div className="title-row">

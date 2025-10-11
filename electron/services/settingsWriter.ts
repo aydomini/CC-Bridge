@@ -140,14 +140,18 @@ const readFileSafeSync = (filePath: string): string | null => {
 class SettingsWriter {
   /**
    * Check if Claude Code process is running
+   * 使用精确匹配避免误报 (如 claude-code-router 等)
    */
   async isClaudeRunning(): Promise<boolean> {
     try {
       if (process.platform === 'darwin' || process.platform === 'linux') {
-        const { stdout } = await execAsync('ps aux | grep -i claude | grep -v grep')
+        // 精确匹配 "claude" 进程名 (后面跟空格或行尾)
+        // 避免匹配 claude-code-router, claude-xxx 等进程
+        const { stdout } = await execAsync('ps aux | grep -E "claude[[:space:]]|claude$" | grep -v grep')
         return stdout.trim().length > 0
       } else if (process.platform === 'win32') {
-        const { stdout } = await execAsync('tasklist | findstr /i claude')
+        // Windows: 使用精确进程名匹配
+        const { stdout } = await execAsync('tasklist | findstr /i "^claude.exe"')
         return stdout.trim().length > 0
       }
       return false
@@ -158,14 +162,18 @@ class SettingsWriter {
 
   /**
    * Check if Codex process is running
+   * 使用精确匹配避免误报 (如 VSCode 的 codex app-server 等)
    */
   async isCodexRunning(): Promise<boolean> {
     try {
       if (process.platform === 'darwin' || process.platform === 'linux') {
-        const { stdout } = await execAsync('ps aux | grep -i codex | grep -v grep')
+        // 精确匹配 "codex" 或 "codex-cli" 进程名 (后面跟空格或行尾)
+        // 排除 VSCode 扩展中的 "codex app-server" 等进程
+        const { stdout } = await execAsync('ps aux | grep -E "(^|/)codex[[:space:]]|(^|/)codex$|(^|/)codex-cli[[:space:]]|(^|/)codex-cli$" | grep -v grep | grep -v "codex app-server"')
         return stdout.trim().length > 0
       } else if (process.platform === 'win32') {
-        const { stdout } = await execAsync('tasklist | findstr /i codex')
+        // Windows: 使用精确进程名匹配
+        const { stdout } = await execAsync('tasklist | findstr /i "^codex.exe ^codex-cli.exe"')
         return stdout.trim().length > 0
       }
       return false
