@@ -545,7 +545,7 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
       }
 
       // 只有当实际存在自定义内容时才启用自定义配置
-      setUseCustomConfig(hasCustomConfig || hasRawToml)
+      setUseCustomConfig(Boolean(hasCustomConfig || hasRawToml))
       setInputMode('simple')
       setJsonInput('')
     }
