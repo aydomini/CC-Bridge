@@ -172,77 +172,17 @@ Click the **"+"** button in the top-right corner and fill in the station details
 | **Custom Config** | Optional | Optional | JSON configuration overrides merged with global defaults |
 | **Balance** | Optional | Optional | Set balance and currency for expense tracking |
 
-#### Quick Import (Supported in Both Claude & Codex Modes)
+#### Quick Import
 
-**✨ v1.2.5 Update**: Quick import feature fully upgraded! Now supports multiple formats:
+Click the "Quick Import" button to import configurations in the following formats:
 
-**Claude Mode Supports**:
-1. Environment variables:
-   ```bash
-   ANTHROPIC_AUTH_TOKEN=sk-ant-xxxxx
-   ANTHROPIC_BASE_URL=https://api.example.com
-   ```
+- **Environment Variables**: `KEY=VALUE` format key-value pairs (supports multiple lines)
+- **JSON Configuration** (Claude Mode): JSON object containing `env`, `permissions`, and other fields
+- **TOML Configuration** (Codex Mode): Full TOML config, automatically split into override and additional configs
 
-2. JSON configuration:
-   ```json
-   {
-     "env": {
-       "ANTHROPIC_AUTH_TOKEN": "sk-ant-xxxxx",
-       "ANTHROPIC_BASE_URL": "https://api.example.com",
-       "CUSTOM_VAR": "value"
-     },
-     "permissions": {
-       "allow": ["read", "write"],
-       "deny": []
-     }
-   }
-   ```
+The app automatically fixes common format issues (Chinese punctuation, missing commas, smart quotes, etc.) and preserves all custom fields.
 
-**Codex Mode Supports**:
-1. Environment variables:
-   ```bash
-   OPENAI_API_KEY=sk-xxxxx
-   BASE_URL=https://api.example.com
-   ```
-
-2. Full TOML config (auto-splits into override + additional configs):
-   ```toml
-   model_provider = "openai"
-   model = "gpt-4"
-
-   [model_providers.custom]
-   base_url = "https://api.example.com"
-
-   [[mcp_servers]]
-   name = "filesystem"
-   ```
-
-**✨ New in v1.2.3**: Quick import now supports top-level custom fields! You can import configurations like this:
-
-```json
-{
-  "env": {
-    "ANTHROPIC_AUTH_TOKEN": "sk-ant-xxxxx",
-    "ANTHROPIC_BASE_URL": "https://api.example.com",
-    "CUSTOM_VAR": "value"
-  },
-  "permissions": {
-    "allow": ["read", "write"],
-    "deny": []
-  },
-  "timeout": 5000,
-  "customSettings": {
-    "feature": "enabled"
-  }
-}
-```
-
-The app automatically fixes common format issues:
-- ✅ Chinese punctuation (，。"") → English punctuation
-- ✅ Missing commas auto-added
-- ✅ Smart quotes ("") → Standard quotes
-- ✅ Newline normalization
-- ✅ **Preserves all top-level custom fields** (v1.2.3+)
+> 💡 For detailed format examples and feature descriptions, see the "v1.2.5 Update" section above.
 
 ### 3️⃣ Apply Configuration
 
@@ -251,7 +191,7 @@ Select the target station and click the **"Apply"** button:
 - **Claude Mode**: Writes config to `~/.claude/settings.json`
 - **Codex Mode**: Writes config to `~/.codex/config.toml` and `~/.codex/auth.json`
 
-A timestamped backup is automatically created before applying (e.g., `settings.json.backup.1234567890`).
+A timestamped backup is automatically created before applying (e.g., `settings.json.backup.1234567890`), keeping the most recent 1 backup. To restore, backup files are located in the same directory as config files.
 
 > ⚠️ **Important**: If Claude Code CLI is running, you need to manually restart the CLI after applying the config.
 
@@ -262,7 +202,7 @@ Click the **"⚙️ Global Config"** button at the top to edit:
 #### Base Config
 
 - **Claude Mode**: Edit default environment variables (`env`) and permissions config (`permissions`)
-  - ✨ **New in v1.2.2**: Supports arbitrary custom fields! Add top-level fields like `timeout`, `retryAttempts`, etc.
+  - Supports arbitrary custom fields - add top-level fields like `timeout`, `retryAttempts`, etc.
   - The `env` field supports any custom environment variables (e.g., `MY_CUSTOM_VAR`)
   - Example:
     ```json
@@ -281,16 +221,15 @@ Click the **"⚙️ Global Config"** button at the top to edit:
       }
     }
     ```
-- **Codex Mode**: Edit default model configuration (`model`, `model_provider`, etc.)
-  - ✨ **New in v1.2.2**: Also supports top-level custom field extensions
+- **Codex Mode**: Edit default model configuration (`model`, `model_provider`, etc.), also supports top-level custom field extensions
 
 File path hints:
 - Claude: `~/.claude/settings.json`
 - Codex: `~/.codex/config.toml` + `~/.codex/auth.json`
 
-#### Project Config 🆕
+#### Project Config
 
-New in v1.2.1! Edit project-level configuration files directly in the app:
+Edit project-level configuration files directly in the app:
 
 - **Claude Mode**: Edit `~/.claude/CLAUDE.md`
 - **Codex Mode**: Edit `~/.codex/AGENTS.md`
@@ -307,50 +246,6 @@ The app resides in the menu bar for quick operations:
 - **One-Click Switching**: Click station name to apply config without opening the main window
 - **External Warning**: If config files are modified externally (not managed by this app), ⚠️ warning is displayed
 - **Mode Indicator**: The active mode is marked with "(Active Mode)"
-
----
-
-## ⚙️ Core Features Explained
-
-### 🔐 Security Encryption
-
-- **Encryption Algorithm**: AES-256-CBC (industry-standard encryption algorithm)
-- **Key Generation**: Derived from device-specific paths, hardware-bound
-- **Automatic Migration**: Detects device path changes and auto-migrates encryption keys
-- **Zero Plaintext Storage**: All API tokens are encrypted before storage, not readable in config files
-
-### 📝 Configuration System Architecture
-
-CC Bridge uses a three-tier configuration system:
-
-1. **Global Base Config**
-   - Default configuration for all stations
-   - Maintained separately for Claude / Codex modes
-   - Editable in the "Global Config" dialog
-
-2. **Station Custom Config**
-   - Per-station configuration overrides
-   - Stored in JSON format, merged with global config
-   - Supports overriding environment variables, permissions, model parameters, etc.
-
-3. **Project-Level Config Files** 🆕
-   - `CLAUDE.md` / `AGENTS.md` files
-   - Store project-level system prompts, memory banks, rules
-   - Persistent across sessions, shared by all stations
-
-### 🎨 UI/UX Optimizations
-
-- **Mode-Aware Interface**: Dynamically adjusts form fields and hints based on Claude / Codex mode
-- **Live Preview**: Station list supports collapsible config preview
-- **File Path Hints**: All config editors display corresponding file paths above the text area
-- **Layout Stability**: Interface height remains stable when switching languages, no jitter
-- **Responsive Design**: Adapts to dark/light themes, auto-follows system settings
-
-### 🔄 Smart Backup
-
-- **Automatic Backup**: Auto-creates timestamped backups before applying configs
-- **Backup Cleanup**: Automatically keeps the most recent 1 backup, deletes outdated ones
-- **Manual Recovery**: Backup files are located in the same directory as config files, can be manually restored
 
 ---
 

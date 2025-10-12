@@ -172,77 +172,17 @@ args = ["-y", "@modelcontextprotocol/server-filesystem"]
 | **自定义配置** | 可选 | 可选 | JSON 格式的配置覆盖，会与全局配置合并 |
 | **余额** | 可选 | 可选 | 设置余额与货币，方便追踪消费 |
 
-#### 快速导入（Claude 与 Codex 模式均支持）
+#### 快速导入
 
-**✨ v1.2.5 更新**：快速导入功能全面升级！现在支持多种格式：
+点击「快速导入」按钮，支持以下格式：
 
-**Claude 模式支持**：
-1. 环境变量格式：
-   ```bash
-   ANTHROPIC_AUTH_TOKEN=sk-ant-xxxxx
-   ANTHROPIC_BASE_URL=https://api.example.com
-   ```
+- **环境变量格式**：`KEY=VALUE` 格式的键值对（支持多行）
+- **JSON 配置格式**（Claude 模式）：包含 `env`、`permissions` 等字段的 JSON 对象
+- **TOML 配置格式**（Codex 模式）：完整的 TOML 配置，自动拆分为覆写配置和附加配置
 
-2. JSON 配置格式：
-   ```json
-   {
-     "env": {
-       "ANTHROPIC_AUTH_TOKEN": "sk-ant-xxxxx",
-       "ANTHROPIC_BASE_URL": "https://api.example.com",
-       "CUSTOM_VAR": "value"
-     },
-     "permissions": {
-       "allow": ["read", "write"],
-       "deny": []
-     }
-   }
-   ```
+程序会自动修复常见格式问题（中文标点、缺失逗号、智能引号等），并保留所有自定义字段。
 
-**Codex 模式支持**：
-1. 环境变量格式：
-   ```bash
-   OPENAI_API_KEY=sk-xxxxx
-   BASE_URL=https://api.example.com
-   ```
-
-2. 完整 TOML 配置（自动拆分为覆写配置 + 附加配置）：
-   ```toml
-   model_provider = "openai"
-   model = "gpt-4"
-
-   [model_providers.custom]
-   base_url = "https://api.example.com"
-
-   [[mcp_servers]]
-   name = "filesystem"
-   ```
-
-**✨ v1.2.3 新增**：快速导入现已支持顶层自定义字段！你可以这样导入：
-
-```json
-{
-  "env": {
-    "ANTHROPIC_AUTH_TOKEN": "sk-ant-xxxxx",
-    "ANTHROPIC_BASE_URL": "https://api.example.com",
-    "CUSTOM_VAR": "value"
-  },
-  "permissions": {
-    "allow": ["read", "write"],
-    "deny": []
-  },
-  "timeout": 5000,
-  "customSettings": {
-    "feature": "enabled"
-  }
-}
-```
-
-程序会自动修复常见格式问题：
-- ✅ 中文标点（，。""）→ 英文标点
-- ✅ 缺失逗号自动补全
-- ✅ 智能引号（""）→ 标准引号
-- ✅ 换行符统一处理
-- ✅ **保留所有顶层自定义字段**（v1.2.3+）
+> 💡 详细的格式示例和功能说明，请参考上方的「v1.2.5 更新内容」章节。
 
 ### 3️⃣ 应用配置
 
@@ -251,7 +191,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem"]
 - **Claude 模式**：配置写入 `~/.claude/settings.json`
 - **Codex 模式**：配置写入 `~/.codex/config.toml` 和 `~/.codex/auth.json`
 
-应用前会自动创建带时间戳的备份文件（如 `settings.json.backup.1234567890`）。
+应用前会自动创建带时间戳的备份文件（如 `settings.json.backup.1234567890`），自动保留最近 1 个备份。如需恢复，备份文件位于配置文件同目录。
 
 > ⚠️ **重要提示**：如果 Claude Code CLI 正在运行，应用配置后需手动重启 CLI 以生效。
 
@@ -262,7 +202,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem"]
 #### 基础配置（Base Config）
 
 - **Claude 模式**：编辑默认的环境变量（`env`）和权限配置（`permissions`）
-  - ✨ **v1.2.2 新增**：支持任意自定义字段！可在顶层添加 `timeout`、`retryAttempts` 等额外配置
+  - 支持任意自定义字段，可在顶层添加 `timeout`、`retryAttempts` 等额外配置
   - `env` 字段支持添加任意环境变量（如 `MY_CUSTOM_VAR`）
   - 示例：
     ```json
@@ -281,16 +221,15 @@ args = ["-y", "@modelcontextprotocol/server-filesystem"]
       }
     }
     ```
-- **Codex 模式**：编辑默认的模型配置（`model`、`model_provider` 等）
-  - ✨ **v1.2.2 新增**：同样支持顶层自定义字段扩展
+- **Codex 模式**：编辑默认的模型配置（`model`、`model_provider` 等），同样支持顶层自定义字段扩展
 
 文件路径提示：
 - Claude：`~/.claude/settings.json`
 - Codex：`~/.codex/config.toml` + `~/.codex/auth.json`
 
-#### 项目配置（Project Config）🆕
+#### 项目配置（Project Config）
 
-v1.2.1 新增功能！直接在应用内编辑项目级配置文件：
+直接在应用内编辑项目级配置文件：
 
 - **Claude 模式**：编辑 `~/.claude/CLAUDE.md`
 - **Codex 模式**：编辑 `~/.codex/AGENTS.md`
@@ -307,50 +246,6 @@ v1.2.1 新增功能！直接在应用内编辑项目级配置文件：
 - **一键切换**：点击站点名称即可应用配置，无需打开主窗口
 - **外部警告**：如果检测到配置文件被外部修改（非本应用管理），会显示 ⚠️ 提示
 - **模式指示**：当前激活的模式会标注「（当前模式）」
-
----
-
-## ⚙️ 核心特性详解
-
-### 🔐 安全加密
-
-- **加密算法**：AES-256-CBC（行业标准加密算法）
-- **密钥生成**：基于设备特定路径派生，绑定本机硬件
-- **自动迁移**：检测到设备路径变化时，自动迁移加密密钥
-- **零明文存储**：所有 API 令牌加密后存储，配置文件中无法直接读取
-
-### 📝 配置系统架构
-
-CC Bridge 采用三层配置系统：
-
-1. **全局基础配置（Base Config）**
-   - 所有站点的默认配置
-   - Claude / Codex 模式各自独立维护
-   - 可在「全局配置」对话框中编辑
-
-2. **站点自定义配置（Custom Config）**
-   - 针对单个站点的配置覆盖
-   - 以 JSON 格式存储，与全局配置合并
-   - 支持覆盖环境变量、权限、模型参数等
-
-3. **项目级配置文件（Project Config）** 🆕
-   - `CLAUDE.md` / `AGENTS.md` 文件
-   - 存储项目级的系统提示词、记忆库、规则
-   - 跨会话持久化，所有站点共享
-
-### 🎨 UI/UX 优化
-
-- **模式感知界面**：根据 Claude / Codex 模式动态调整表单字段与提示文本
-- **实时预览**：站点列表支持配置预览，可折叠展开查看详情
-- **文件路径提示**：所有配置编辑框上方显示对应的文件路径
-- **布局稳定性**：中英文切换时，界面高度保持稳定，无抖动
-- **响应式设计**：适配深色/浅色主题，自动跟随系统设置
-
-### 🔄 智能备份
-
-- **自动备份**：应用配置前自动创建时间戳备份
-- **备份清理**：自动保留最近 1 个备份，删除过期备份
-- **手动恢复**：备份文件位于配置文件同目录，可手动恢复
 
 ---
 
