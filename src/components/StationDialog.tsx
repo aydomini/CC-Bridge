@@ -230,61 +230,111 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
     return toTitleCase(core)
   }
 
-  const parseJsonConfig = (jsonStr: string) => {
-    if (isCodex) return null
+  const parseTomlConfig = (tomlStr: string) => {
+    // Codex TOML 格式解析
     try {
-      const cleaned = normalizeJsonInput(jsonStr)
-      const config = JSON.parse(cleaned)
-      setJsonError('')
-
       let token = ''
       let url = ''
-      let envData: Record<string, any> = {}
-      let permissions = { allow: [], deny: [] as string[] }
+      let modelProvider = ''
+      let model = ''
+      let modelReasoningEffort: string | undefined
+      let disableResponseStorage: boolean | undefined
+      let wireApi = ''
+      let requiresOpenaiAuth: boolean | undefined
+      const additionalSettings: Record<string, any> = {}
 
-      if (config.env) {
-        token = config.env.ANTHROPIC_AUTH_TOKEN || ''
-        url = config.env.ANTHROPIC_BASE_URL || ''
-        envData = { ...config.env }
-        permissions = config.permissions || permissions
+      // 先找到第一个section的位置,只解析顶层配置
+      const firstSectionMatch = tomlStr.match(/\n\[/)
+      const topLevelEnd = firstSectionMatch ? tomlStr.indexOf(firstSectionMatch[0]) : tomlStr.length
+      const topLevelContent = tomlStr.slice(0, topLevelEnd)
+
+      // 只解析顶层配置 (不包括任何section内的内容)
+      const topLevelPattern = /^([a-z_]+)\s*=\s*(.+)$/gm
+      let match: RegExpExecArray | null
+
+      while ((match = topLevelPattern.exec(topLevelContent)) !== null) {
+        const key = match[1].trim()
+        let value = match[2].trim()
+
+        // 移除引号
+        if (value.startsWith('"') && value.endsWith('"')) {
+          value = value.slice(1, -1)
+        }
+
+        switch (key) {
+          case 'model_provider':
+            modelProvider = value
+            break
+          case 'model':
+            model = value
+            break
+          case 'model_reasoning_effort':
+            modelReasoningEffort = value
+            break
+          case 'disable_response_storage':
+            disableResponseStorage = value === 'true'
+            break
+          default:
+            // 其他顶层字段放入 additionalSettings
+            if (value === 'true' || value === 'false') {
+              additionalSettings[key] = value === 'true'
+            } else if (!isNaN(Number(value))) {
+              additionalSettings[key] = Number(value)
+            } else {
+              additionalSettings[key] = value
+            }
+        }
+      }
+
+      // 解析 provider section
+      const providerSectionMatch = tomlStr.match(/\[model_providers\.([^\]]+)\]([\s\S]*?)(?=\n\[|$)/i)
+      if (providerSectionMatch) {
+        const providerContent = providerSectionMatch[2]
+        const baseUrlMatch = providerContent.match(/base_url\s*=\s*"([^"]+)"/)
+        const wireApiMatch = providerContent.match(/wire_api\s*=\s*"([^"]+)"/)
+        const requiresMatch = providerContent.match(/requires_openai_auth\s*=\s*(true|false)/i)
+
+        url = baseUrlMatch?.[1] || ''
+        wireApi = wireApiMatch?.[1] || ''
+        requiresOpenaiAuth = requiresMatch ? requiresMatch[1].toLowerCase() === 'true' : undefined
+      }
+
+      // 提取 MCP servers 和其他附加配置
+      // 寻找第一个非 model_providers 的 section
+      let rawToml = ''
+
+      // 优先寻找标记
+      const advancedMarkerIndex = tomlStr.indexOf('# --- ')
+      if (advancedMarkerIndex !== -1) {
+        rawToml = tomlStr.slice(advancedMarkerIndex)
       } else {
-        token = config.ANTHROPIC_AUTH_TOKEN || ''
-        url = config.ANTHROPIC_BASE_URL || ''
-        envData = { ...config }
+        // 否则提取所有 mcp_servers 和其他 sections
+        const mcpStartMatch = tomlStr.match(/\[mcp_servers\./)
+        if (mcpStartMatch && mcpStartMatch.index !== undefined) {
+          rawToml = tomlStr.slice(mcpStartMatch.index)
+        }
       }
 
-      if (!token && !url) {
-        setJsonError(t('missingToken') + ' and ' + t('missingUrl'))
-        return null
-      }
-      if (!token) {
-        setJsonError(t('missingToken'))
-        return null
-      }
       if (!url) {
         setJsonError(t('missingUrl'))
         return null
       }
 
-      const customEnv = { ...envData }
-      delete customEnv.ANTHROPIC_AUTH_TOKEN
-      delete customEnv.ANTHROPIC_BASE_URL
+      const customConfig: Partial<CodexBaseConfig> = {}
+      if (modelProvider) customConfig.modelProvider = modelProvider
+      if (model) customConfig.model = model
+      if (modelReasoningEffort) customConfig.modelReasoningEffort = modelReasoningEffort
+      if (disableResponseStorage !== undefined) customConfig.disableResponseStorage = disableResponseStorage
+      if (wireApi) customConfig.wireApi = wireApi
+      if (requiresOpenaiAuth !== undefined) customConfig.requiresOpenaiAuth = requiresOpenaiAuth
+      if (Object.keys(additionalSettings).length > 0) customConfig.additionalSettings = additionalSettings
 
-      // v1.2.3: Preserve all top-level custom fields
-      const customCfg: Partial<ClaudeBaseConfig> = {
-        ...config,  // Copy all top-level fields first
-        env: customEnv,
-        permissions
-      }
-
-      // Remove extracted fields that are now stored separately
-      delete (customCfg as any).ANTHROPIC_AUTH_TOKEN
-      delete (customCfg as any).ANTHROPIC_BASE_URL
-
+      setJsonError('')
       return {
         authToken: token,
         baseUrl: url,
-        customConfig: customCfg
+        customConfig,
+        rawToml: rawToml.trim() || undefined
       }
     } catch (error) {
       setJsonError(t('invalidJson'))
@@ -292,8 +342,174 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
     }
   }
 
+  const parseJsonConfig = (jsonStr: string) => {
+    // Codex 模式: 优先尝试解析 TOML 格式
+    if (isCodex && jsonStr.includes('[model_providers.')) {
+      return parseTomlConfig(jsonStr)
+    }
+
+    // 尝试解析环境变量格式 (KEY=VALUE)
+    const envLines = jsonStr.trim().split('\n')
+    const looksLikeEnv = envLines.length > 0 && envLines.every(line => {
+      const trimmed = line.trim()
+      return !trimmed || trimmed.includes('=') || trimmed.startsWith('#')
+    })
+
+    if (looksLikeEnv) {
+      // 解析环境变量格式
+      try {
+        let token = ''
+        let url = ''
+
+        // 模糊匹配辅助函数
+        const normalizeKey = (key: string) => key.toUpperCase().replace(/[_-]/g, '')
+        const cleanValue = (value: string) => {
+          // 移除引号包裹
+          let cleaned = value.trim()
+          if ((cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+              (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+            cleaned = cleaned.slice(1, -1)
+          }
+          return cleaned
+        }
+
+        // 定义匹配模式(优先级从高到低)
+        const tokenPatterns = isCodex
+          ? ['OPENAIAPI KEY', 'OPENAIAPIKEY', 'OPENAIKEY', 'APIKEY', 'AUTHTOKEN', 'TOKEN', 'KEY']
+          : ['ANTHROPICAUTHTOKEN', 'ANTHROPICTOKEN', 'AUTHTOKEN', 'TOKEN', 'APIKEY', 'KEY']
+
+        const urlPatterns = isCodex
+          ? ['OPENAIBASEURL', 'OPENAIURL', 'BASEURL', 'APIURL', 'ENDPOINT', 'URL', 'HOST']
+          : ['ANTHROPICBASEURL', 'ANTHROPICURL', 'BASEURL', 'APIURL', 'ENDPOINT', 'URL', 'HOST']
+
+        for (const line of envLines) {
+          const trimmed = line.trim()
+          if (!trimmed || trimmed.startsWith('#')) continue
+
+          const equalIndex = trimmed.indexOf('=')
+          if (equalIndex === -1) continue
+
+          const key = trimmed.slice(0, equalIndex).trim()
+          const value = cleanValue(trimmed.slice(equalIndex + 1))
+
+          if (!value) continue
+
+          const normalizedKey = normalizeKey(key)
+
+          // 匹配 Token/Key
+          if (!token) {
+            for (const pattern of tokenPatterns) {
+              if (normalizedKey.includes(pattern)) {
+                token = value
+                break
+              }
+            }
+          }
+
+          // 匹配 URL
+          if (!url) {
+            for (const pattern of urlPatterns) {
+              if (normalizedKey.includes(pattern)) {
+                url = value
+                break
+              }
+            }
+          }
+        }
+
+        if (!token && !url) {
+          setJsonError(t('missingToken') + ' and ' + t('missingUrl'))
+          return null
+        }
+        if (!token) {
+          setJsonError(t('missingToken'))
+          return null
+        }
+        if (!url) {
+          setJsonError(t('missingUrl'))
+          return null
+        }
+
+        setJsonError('')
+        return {
+          authToken: token,
+          baseUrl: url
+          // 环境变量格式不包含自定义配置，不设置 customConfig
+        }
+      } catch (error) {
+        setJsonError(t('invalidJson'))
+        return null
+      }
+    }
+
+    // Claude 模式: 尝试解析JSON格式
+    if (!isCodex) {
+      try {
+        const cleaned = normalizeJsonInput(jsonStr)
+        const config = JSON.parse(cleaned)
+        setJsonError('')
+
+        let token = ''
+        let url = ''
+        let envData: Record<string, any> = {}
+        let permissions = { allow: [], deny: [] as string[] }
+
+        if (config.env) {
+          token = config.env.ANTHROPIC_AUTH_TOKEN || ''
+          url = config.env.ANTHROPIC_BASE_URL || ''
+          envData = { ...config.env }
+          permissions = config.permissions || permissions
+        } else {
+          token = config.ANTHROPIC_AUTH_TOKEN || ''
+          url = config.ANTHROPIC_BASE_URL || ''
+          envData = { ...config }
+        }
+
+        if (!token && !url) {
+          setJsonError(t('missingToken') + ' and ' + t('missingUrl'))
+          return null
+        }
+        if (!token) {
+          setJsonError(t('missingToken'))
+          return null
+        }
+        if (!url) {
+          setJsonError(t('missingUrl'))
+          return null
+        }
+
+        const customEnv = { ...envData }
+        delete customEnv.ANTHROPIC_AUTH_TOKEN
+        delete customEnv.ANTHROPIC_BASE_URL
+
+        // v1.2.3: Preserve all top-level custom fields
+        const customCfg: Partial<ClaudeBaseConfig> = {
+          ...config,  // Copy all top-level fields first
+          env: customEnv,
+          permissions
+        }
+
+        // Remove extracted fields that are now stored separately
+        delete (customCfg as any).ANTHROPIC_AUTH_TOKEN
+        delete (customCfg as any).ANTHROPIC_BASE_URL
+
+        return {
+          authToken: token,
+          baseUrl: url,
+          customConfig: customCfg
+        }
+      } catch (error) {
+        setJsonError(t('invalidJson'))
+        return null
+      }
+    }
+
+    // Codex 模式: JSON 格式不支持
+    setJsonError(t('invalidJson'))
+    return null
+  }
+
   const handleJsonImport = () => {
-    if (isCodex) return
     const parsed = parseJsonConfig(jsonInput)
     if (parsed) {
       const autoName = !formData.name ? generateNameFromUrl(parsed.baseUrl) : formData.name
@@ -313,10 +529,23 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
         // ignore invalid URL
       }
 
-      setCustomConfig(parsed.customConfig)
-      const cleanJson = JSON.stringify(parsed.customConfig, null, 2)
-      setCustomJsonValue(cleanJson)
-      setUseCustomConfig(true)
+      // 只有当存在 customConfig 或 rawToml 时才启用自定义配置
+      const hasCustomConfig = parsed.customConfig && Object.keys(parsed.customConfig).length > 0
+      const hasRawToml = 'rawToml' in parsed && parsed.rawToml
+
+      if (hasCustomConfig) {
+        setCustomConfig(parsed.customConfig)
+        const cleanJson = JSON.stringify(parsed.customConfig, null, 2)
+        setCustomJsonValue(cleanJson)
+      }
+
+      // 如果解析结果包含 rawToml,设置到附加配置
+      if (hasRawToml) {
+        setRawTomlValue(parsed.rawToml!)
+      }
+
+      // 只有当实际存在自定义内容时才启用自定义配置
+      setUseCustomConfig(hasCustomConfig || hasRawToml)
       setInputMode('simple')
       setJsonInput('')
     }
@@ -440,8 +669,12 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
     // Append raw TOML from advanced tab if provided
     if (useCustomConfig && rawTomlValue.trim()) {
       lines.push('')
-      lines.push('# --- Advanced Configuration ---')
-      lines.push(rawTomlValue.trim())
+      // 如果 rawToml 已经包含标记,不要重复添加
+      const trimmedRawToml = rawTomlValue.trim()
+      if (!trimmedRawToml.startsWith('# --- ')) {
+        lines.push('# --- Advanced Configuration ---')
+      }
+      lines.push(trimmedRawToml)
     }
 
     return lines.join('\n')
@@ -458,32 +691,30 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="dialog-form">
-          {!isCodex && (
-            <div className="mode-toggle mini">
-              <button
-                type="button"
-                className={`mode-btn ${inputMode === 'simple' ? 'active' : ''}`}
-                onClick={() => setInputMode('simple')}
-              >
-                {t('form')}
-              </button>
-              <button
-                type="button"
-                className={`mode-btn ${inputMode === 'json' ? 'active' : ''}`}
-                onClick={() => setInputMode('json')}
-              >
-                {t('json')}
-              </button>
-            </div>
-          )}
+          <div className="mode-toggle mini">
+            <button
+              type="button"
+              className={`mode-btn ${inputMode === 'simple' ? 'active' : ''}`}
+              onClick={() => setInputMode('simple')}
+            >
+              {t('form')}
+            </button>
+            <button
+              type="button"
+              className={`mode-btn ${inputMode === 'json' ? 'active' : ''}`}
+              onClick={() => setInputMode('json')}
+            >
+              {isCodex ? t('quickImport') : t('json')}
+            </button>
+          </div>
 
-          {inputMode === 'json' && !isCodex ? (
+          {inputMode === 'json' ? (
             <div className="json-import-section mini">
               <textarea
                 className="json-textarea mini"
                 value={jsonInput}
                 onChange={(e) => setJsonInput(e.target.value)}
-                placeholder={t('jsonPlaceholder')}
+                placeholder={isCodex ? t('codexQuickImportPlaceholder') : t('claudeQuickImportPlaceholder')}
                 rows={8}
               />
               {jsonError && <div className="error-message mini">{jsonError}</div>}
@@ -688,7 +919,7 @@ const StationDialog: React.FC<Props> = ({ mode, station, onSave, onClose }) => {
 
           <div className="dialog-actions mini">
             <button type="button" onClick={onClose} className="btn-secondary">{t('cancel')}</button>
-            {inputMode === 'json' && !isCodex && (
+            {inputMode === 'json' && (
               <button
                 type="button"
                 onClick={handleJsonImport}

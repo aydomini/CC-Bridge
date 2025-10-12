@@ -65,6 +65,7 @@ const translations = {
     providerKeyPlaceholder: 'Provider identifier (optional)',
     form: 'Manual Config',
     json: 'Quick Import',
+    quickImport: 'Quick Import',
     simple: 'Simple',
     favicon: 'Favicon',
     faviconPlaceholder: 'Favicon URL (optional)',
@@ -86,6 +87,8 @@ const translations = {
     urlPlaceholder: 'API endpoint URL',
     tokenPlaceholder: 'Authentication token',
     jsonPlaceholder: 'Paste your settings.json here',
+    claudeQuickImportPlaceholder: 'Paste your configuration here. Supports:\n\n1. Environment variables:\n   ANTHROPIC_AUTH_TOKEN=sk-xxx\n   ANTHROPIC_BASE_URL=https://api.example.com\n\n2. JSON format:\n   {\n     "env": {\n       "ANTHROPIC_AUTH_TOKEN": "sk-xxx",\n       "ANTHROPIC_BASE_URL": "https://..."\n     }\n   }',
+    codexQuickImportPlaceholder: 'Paste your configuration here. Supports:\n\n1. Environment variables:\n   OPENAI_API_KEY=sk-xxx\n   BASE_URL=https://api.example.com\n\n2. Full TOML config:\n   model_provider = "openai"\n   model = "gpt-4"\n   [model_providers.custom]\n   base_url = "https://..."\n   [[mcp_servers]]\n   name = "filesystem"',
 
     // Empty State
     noStations: 'No transfer stations yet',
@@ -188,6 +191,7 @@ const translations = {
     providerKeyPlaceholder: '提供方标识（可选）',
     form: '手动配置',
     json: '快速导入',
+    quickImport: '快速导入',
     simple: '简单',
     favicon: '图标',
     faviconPlaceholder: '图标地址（可选）',
@@ -209,6 +213,8 @@ const translations = {
     urlPlaceholder: 'API 端点地址',
     tokenPlaceholder: '认证令牌',
     jsonPlaceholder: '在此粘贴您的 settings.json',
+    claudeQuickImportPlaceholder: '在此粘贴您的配置，支持以下格式：\n\n1. 环境变量格式：\n   ANTHROPIC_AUTH_TOKEN=sk-xxx\n   ANTHROPIC_BASE_URL=https://api.example.com\n\n2. JSON 格式：\n   {\n     "env": {\n       "ANTHROPIC_AUTH_TOKEN": "sk-xxx",\n       "ANTHROPIC_BASE_URL": "https://..."\n     }\n   }',
+    codexQuickImportPlaceholder: '在此粘贴您的配置，支持以下格式：\n\n1. 环境变量格式：\n   OPENAI_API_KEY=sk-xxx\n   BASE_URL=https://api.example.com\n\n2. 完整 TOML 配置：\n   model_provider = "openai"\n   model = "gpt-4"\n   [model_providers.custom]\n   base_url = "https://..."\n   [[mcp_servers]]\n   name = "filesystem"',
 
     // Empty State
     noStations: '暂无中转站点',

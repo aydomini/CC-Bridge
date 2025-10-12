@@ -267,8 +267,12 @@ class SettingsWriter {
     // Append raw TOML configuration if provided
     if (station.rawToml && station.rawToml.trim()) {
       lines.push('')
-      lines.push('# --- Additional Configuration ---')
-      lines.push(station.rawToml.trim())
+      // 如果 rawToml 已经包含标记,不要重复添加
+      const trimmedRawToml = station.rawToml.trim()
+      if (!trimmedRawToml.startsWith('# --- ')) {
+        lines.push('# --- Advanced Configuration ---')
+      }
+      lines.push(trimmedRawToml)
     }
 
     const settings: CodexSettings = {

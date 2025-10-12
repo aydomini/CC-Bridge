@@ -25,7 +25,7 @@ CC Bridge is a **free & open-source** Electron + React desktop application desig
 ### Core Features
 
 - 🔄 **One-Click Station Switching**: Manage multiple transfer stations, apply configurations instantly, automatic backups
-- 🔐 **Military-Grade Encryption**: AES-256-CBC encrypted token storage with device-bound keys
+- 🔐 **Secure Encrypted Storage**: AES-256-CBC encrypted token storage with device-bound keys, locally encrypted
 - ⚙️ **Flexible Configuration System**: Global defaults + per-station overrides + project-level config files
 - 📝 **Project Config Editor**: Edit `CLAUDE.md` / `AGENTS.md` directly, manage project-level instructions and memory
 - 💰 **Balance Tracking**: Set balance and currency for each station, monitor usage
@@ -33,7 +33,7 @@ CC Bridge is a **free & open-source** Electron + React desktop application desig
 - 🖥️ **Menu Bar Tray**: Persistent tray icon for quick station/mode switching without opening the main window
 - 📦 **Quick Import**: Claude mode supports JSON quick import with auto-fix for format issues (Chinese punctuation, missing commas, smart quotes, etc.)
 
-> **Latest Version**: v1.2.4 - [Download](https://github.com/aydomini/CC-Bridge/releases)
+> **Latest Version**: v1.2.5 - [Download](https://github.com/aydomini/CC-Bridge/releases)
 > **Current Platform**: macOS (Apple Silicon). Windows / Linux / Intel Mac are planned—PRs welcome!
 
 ---
@@ -65,36 +65,71 @@ CC Bridge is a **free & open-source** Electron + React desktop application desig
 
 ---
 
-## 🎉 v1.2.4 Update
+## 🎉 v1.2.5 Update
 
-### Codex Mode Configuration Editor Enhancement
+### Comprehensive Quick Import Enhancement
 
-- ✨ **Dual-Tab Design**: Custom configuration now split into two tabs
-  - **Override (JSON)**: Override global base config fields in JSON format (e.g., `model`, `modelReasoningEffort`)
-  - **Additional (TOML)**: Add extra TOML configuration sections (e.g., `[[mcp_servers]]`)
-- 🎨 **Elegant Placeholder Text**: Input boxes display formatted example code for clarity
-- 📝 **Clear Separation of Concerns**:
-  - Override tab: Modify base configuration fields
-  - Additional tab: Add custom TOML sections
-- 🔍 **Live Preview**: Both configurations are automatically merged and displayed in the preview area
+- ✨ **Dual-Mode Quick Import**: Both Claude and Codex modes now support quick import
+  - **Claude Mode**: Supports environment variables + JSON format
+  - **Codex Mode**: Supports environment variables + full TOML config
+- 📝 **Detailed Placeholder Text**: Input boxes display format examples for ease of use
+- 🔧 **Intelligent Format Detection**:
+  - Auto-detect environment variable format (`KEY=VALUE`)
+  - Auto-detect JSON format (Claude)
+  - Auto-detect TOML format (Codex)
+- 🧹 **Clean Empty Configs**: Environment variable imports no longer generate empty `{}` custom configs
+- 🎯 **Fuzzy Key Matching**: Supports multiple token and URL key variants
+  - Claude: `ANTHROPIC_AUTH_TOKEN`, `AUTH_TOKEN`, `TOKEN`, `API_KEY`, etc.
+  - Codex: `OPENAI_API_KEY`, `API_KEY`, `TOKEN`, `KEY`, etc.
+  - URL: `BASE_URL`, `API_URL`, `ENDPOINT`, `URL`, etc.
 
-**Usage Examples**:
+**Claude Mode Quick Import Examples**:
 
-Override (JSON):
+Environment variables:
+```bash
+ANTHROPIC_AUTH_TOKEN=sk-ant-xxxxx
+ANTHROPIC_BASE_URL=https://api.example.com
+```
+
+JSON format:
 ```json
 {
-  "model": "gpt-4",
-  "modelReasoningEffort": "medium"
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "sk-ant-xxxxx",
+    "ANTHROPIC_BASE_URL": "https://api.example.com"
+  }
 }
 ```
 
-Additional (TOML):
+**Codex Mode Quick Import Examples**:
+
+Environment variables:
+```bash
+OPENAI_API_KEY=sk-xxxxx
+BASE_URL=https://api.example.com
+```
+
+Full TOML config (auto-splits into override + additional configs):
 ```toml
+model_provider = "openai"
+model = "gpt-4"
+
+[model_providers.custom]
+base_url = "https://api.example.com"
+wire_api = "openai"
+requires_openai_auth = true
+
 [[mcp_servers]]
 name = "filesystem"
 command = "npx"
 args = ["-y", "@modelcontextprotocol/server-filesystem"]
 ```
+
+### Bug Fixes
+
+- 🐛 Fixed duplicate `# --- Advanced Configuration ---` marker in Codex config preview
+- 🐛 Fixed empty `{}` config appearing after environment variable import
+- 🐛 Unified config marker format between frontend preview and backend generation
 
 ---
 
@@ -137,21 +172,50 @@ Click the **"+"** button in the top-right corner and fill in the station details
 | **Custom Config** | Optional | Optional | JSON configuration overrides merged with global defaults |
 | **Balance** | Optional | Optional | Set balance and currency for expense tracking |
 
-#### Quick Import (Claude Mode Only)
+#### Quick Import (Supported in Both Claude & Codex Modes)
 
-Click the "Quick Import" button and paste JSON configuration:
+**✨ v1.2.5 Update**: Quick import feature fully upgraded! Now supports multiple formats:
 
-```json
-{
-  "name": "Production",
-  "baseUrl": "https://api.example.com",
-  "authToken": "sk-ant-xxxxx",
-  "balance": 100,
-  "currency": "USD"
-}
-```
+**Claude Mode Supports**:
+1. Environment variables:
+   ```bash
+   ANTHROPIC_AUTH_TOKEN=sk-ant-xxxxx
+   ANTHROPIC_BASE_URL=https://api.example.com
+   ```
 
-**✨ v1.2.4 Update**: Codex mode now supports dual-tab configuration editor!
+2. JSON configuration:
+   ```json
+   {
+     "env": {
+       "ANTHROPIC_AUTH_TOKEN": "sk-ant-xxxxx",
+       "ANTHROPIC_BASE_URL": "https://api.example.com",
+       "CUSTOM_VAR": "value"
+     },
+     "permissions": {
+       "allow": ["read", "write"],
+       "deny": []
+     }
+   }
+   ```
+
+**Codex Mode Supports**:
+1. Environment variables:
+   ```bash
+   OPENAI_API_KEY=sk-xxxxx
+   BASE_URL=https://api.example.com
+   ```
+
+2. Full TOML config (auto-splits into override + additional configs):
+   ```toml
+   model_provider = "openai"
+   model = "gpt-4"
+
+   [model_providers.custom]
+   base_url = "https://api.example.com"
+
+   [[mcp_servers]]
+   name = "filesystem"
+   ```
 
 **✨ New in v1.2.3**: Quick import now supports top-level custom fields! You can import configurations like this:
 
@@ -250,7 +314,7 @@ The app resides in the menu bar for quick operations:
 
 ### 🔐 Security Encryption
 
-- **Encryption Algorithm**: AES-256-CBC (military-grade encryption standard)
+- **Encryption Algorithm**: AES-256-CBC (industry-standard encryption algorithm)
 - **Key Generation**: Derived from device-specific paths, hardware-bound
 - **Automatic Migration**: Detects device path changes and auto-migrates encryption keys
 - **Zero Plaintext Storage**: All API tokens are encrypted before storage, not readable in config files
