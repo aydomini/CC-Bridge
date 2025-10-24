@@ -1,0 +1,730 @@
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.dialog {
+  background: var(--card-bg);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-lg);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.dialog.compact {
+  max-width: 500px;
+}
+
+.dialog.mini {
+  max-width: 450px;
+}
+
+.base-config-dialog {
+  max-width: 700px;
+}
+
+.base-config-dialog.compact {
+  max-width: 550px;
+}
+
+.base-config-dialog.mini {
+  max-width: 480px;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dialog-header.compact {
+  padding: 1rem 1.25rem;
+}
+
+.dialog-header.mini {
+  padding: 0.875rem 1rem;
+}
+
+.dialog-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.dialog-header.compact h2 {
+  font-size: 1.25rem;
+}
+
+.dialog-header.mini h2 {
+  font-size: 1.125rem;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+}
+
+.btn-close:hover {
+  color: var(--text-primary);
+}
+
+.dialog-form,
+.dialog-content {
+  padding: 1.5rem;
+}
+
+.dialog-content.compact,
+.dialog.compact .dialog-form {
+  padding: 1rem 1.25rem;
+}
+
+.dialog-content.mini,
+.dialog.mini .dialog-form {
+  padding: 0.875rem 1rem;
+}
+
+.form-section {
+  margin-bottom: 2rem;
+}
+
+.form-section.compact {
+  margin-bottom: 1.25rem;
+}
+
+.form-section.mini {
+  margin-bottom: 1rem;
+}
+
+.form-section:last-child {
+  margin-bottom: 0;
+}
+
+.form-section h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group.compact {
+  margin-bottom: 0.75rem;
+}
+
+.form-group.mini {
+  margin-bottom: 0.625rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.form-group.compact label {
+  font-size: 0.8125rem;
+  margin-bottom: 0.375rem;
+}
+
+.form-group.mini label {
+  font-size: 0.75rem;
+  margin-bottom: 0.3rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+}
+
+.help-text {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.field-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.custom-config-fields {
+  background: var(--bg-color);
+  padding: 1rem;
+  border-radius: 0.375rem;
+  margin-top: 1rem;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.dialog-actions.compact {
+  padding: 1rem 1.25rem;
+  gap: 0.5rem;
+}
+
+.dialog-actions.mini {
+  padding: 0.875rem 1rem;
+  gap: 0.5rem;
+}
+
+/* Station Edit Dialog */
+.station-edit-dialog {
+  max-width: 800px;
+}
+
+.station-edit-dialog.compact {
+  max-width: 550px;
+}
+
+.station-edit-dialog.mini {
+  max-width: 450px;
+}
+
+/* Mode Toggle */
+.mode-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.25rem;
+  background: var(--bg-color);
+  border-radius: 0.5rem;
+}
+
+.mode-btn {
+  padding: 0.75rem 1rem;
+  border: 2px solid transparent;
+  background: transparent;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+}
+
+.mode-btn:hover {
+  background: white;
+}
+
+.mode-btn.active {
+  background: white;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* JSON Import Section */
+.json-import-section {
+  padding: 1rem 0;
+}
+
+.json-import-section.compact {
+  padding: 0.5rem 0;
+}
+
+.json-import-section.mini {
+  padding: 0.375rem 0;
+}
+
+.json-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  resize: vertical;
+  background: #f8fafc;
+}
+
+.json-textarea.compact {
+  padding: 0.625rem;
+  font-size: 0.75rem;
+}
+
+.json-textarea.mini {
+  padding: 0.5rem;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.json-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.json-textarea:disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.error-message {
+  color: var(--danger-color);
+  font-size: 0.875rem;
+  margin: 0.5rem 0 1rem;
+  padding: 0.5rem;
+  background: #fee2e2;
+  border-radius: 0.375rem;
+}
+
+.error-message.compact {
+  font-size: 0.75rem;
+  margin: 0.375rem 0 0.5rem;
+  padding: 0.375rem;
+}
+
+.error-message.mini {
+  font-size: 0.6875rem;
+  margin: 0.3rem 0 0.4rem;
+  padding: 0.3rem;
+}
+
+/* Input with Copy Button */
+.input-with-copy {
+  position: relative;
+  display: flex;
+  gap: 0.375rem;
+}
+
+.input-with-copy input {
+  flex: 1;
+  padding-right: 0.75rem;
+}
+
+.btn-copy-small {
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-copy-small:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: scale(1.05);
+}
+
+/* Embedded copy button (inside input/textarea area) */
+.btn-copy-embed-small {
+  padding: 0.375rem 0.5rem;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-copy-embed-small:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+/* Textarea with embedded copy button */
+.textarea-with-copy {
+  position: relative;
+  display: block;
+}
+
+.textarea-with-copy textarea {
+  width: 100%;
+  padding-right: 3rem;
+}
+
+.textarea-with-copy .btn-copy-embed {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.textarea-with-copy .btn-copy-embed:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+}
+
+/* Section Header with Copy */
+.section-header-with-copy {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.section-header-with-copy h3 {
+  margin: 0;
+}
+
+.btn-copy {
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-copy:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);
+}
+
+/* Config Preview */
+.config-preview {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  margin: 0;
+}
+
+.config-preview.compact {
+  padding: 0.625rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  max-height: 250px;
+}
+
+.config-preview.mini {
+  padding: 0.5rem;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  max-height: 200px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.config-preview::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.config-preview::-webkit-scrollbar-track {
+  background: #0f172a;
+  border-radius: 4px;
+}
+
+.config-preview::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+.config-preview::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Custom Configuration Toggle */
+.custom-config-toggle {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-color);
+  border-radius: 0.5rem;
+  border: 2px dashed var(--border-color);
+}
+
+.custom-config-toggle .checkbox-label {
+  margin: 0;
+}
+
+.checkbox-label.compact {
+  font-size: 0.875rem;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.checkbox-label.mini {
+  font-size: 0.8125rem;
+  gap: 0.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.toggle-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: normal;
+}
+
+.custom-config-content {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+}
+
+.custom-config-content.compact {
+  margin-top: 0.625rem;
+  padding: 0.75rem;
+}
+
+.custom-config-content.mini {
+  margin-top: 0.5rem;
+  padding: 0.625rem;
+}
+
+/* Mini Mode Toggle */
+.mode-toggle.mini {
+  margin-bottom: 1rem;
+}
+
+.mode-toggle.mini {
+  gap: 0.375rem;
+  padding: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.mode-toggle.mini .mode-btn {
+  padding: 0.5rem 0.625rem;
+  font-size: 0.75rem;
+}
+
+/* Custom Config Edit Modes */
+.custom-json-edit {
+  margin-top: 1rem;
+}
+
+.help-text-inline {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.custom-form-edit {
+  margin-top: 1rem;
+}
+
+.custom-form-edit h4 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 1.5rem 0 1rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.custom-form-edit h4:first-child {
+  margin-top: 0;
+}
+
+.custom-form-edit .form-group {
+  margin-bottom: 0.875rem;
+}
+
+.custom-form-edit .form-group label {
+  font-size: 0.8125rem;
+}
+
+.custom-form-edit .form-group input,
+.custom-form-edit .form-group select,
+.custom-form-edit .form-group textarea {
+  font-size: 0.8125rem;
+  padding: 0.4rem 0.6rem;
+}
+
+/* Custom Config Section */
+.btn-delete-text {
+  background: transparent;
+  border: none;
+  color: var(--danger-color);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+.btn-delete-text:hover {
+  text-decoration: underline;
+}
+
+/* Dark mode styles */
+[data-theme="dark"] .mode-btn {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .mode-btn:hover {
+  background: var(--card-bg);
+}
+
+[data-theme="dark"] .mode-btn.active {
+  background: var(--card-bg);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+[data-theme="dark"] .error-message {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-color);
+}
+
+[data-theme="dark"] .custom-config-content {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+.custom-config-preview {
+  background: var(--bg-color);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.config-preview-mini {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 0;
+}
+
+.no-custom-config {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: var(--bg-color);
+  border-radius: 0.5rem;
+  border: 2px dashed var(--border-color);
+}
+
+.no-custom-config .help-text {
+  margin-bottom: 1rem;
+}
+
+/* Preview Header */
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.preview-header label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+
+/* Section label for Configuration Preview */
+.section-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}

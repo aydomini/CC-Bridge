@@ -1,0 +1,11 @@
+/* Inherits styles from StationDialog.css and BaseConfigDialog.css */
+
+.custom-config-dialog {
+  max-width: 700px;
+}
+
+.custom-config-dialog .json-textarea {
+  line-height: 1.5;
+  padding: 0.75rem;
+  font-size: 0.8125rem;
+}

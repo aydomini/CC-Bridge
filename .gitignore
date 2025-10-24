@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+dist-electron/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Electron
+out/
+*.dmg
+*.zip
+*.exe
+*.AppImage
+*.deb
+
+# Local Claude Code data
+.claude/
+.codex/
+
+# User data (for testing)
+config.json
+
+# Private documentation (project-level configs)
+CLAUDE.md
+AGENTS.md
